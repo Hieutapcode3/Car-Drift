@@ -1,0 +1,7 @@
+input {
+    FPVector3 Direction;
+}
+component PlayerInfo{
+    player_ref PlayerRef;
+    FP Speed;
+}
