@@ -4,11 +4,6 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes:
-  - enabled: 1
-    path: Assets/QuantumUser/Scenes/MyMenu.unity
-    guid: 88a3423b559d7014f8d353cd10c36bea
-  - enabled: 1
-    path: Assets/QuantumUser/Scenes/QuantumGameScene.unity
-    guid: 16cad866426a34d43ac52614302e6fb1
+  m_Scenes: []
   m_configObjects: {}
+  m_UseUCBPForAssetBundles: 0
