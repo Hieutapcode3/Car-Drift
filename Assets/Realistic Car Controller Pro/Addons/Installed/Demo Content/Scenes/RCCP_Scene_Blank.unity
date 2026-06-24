@@ -3343,6 +3343,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: RCCP_Canvas
       objectReference: {fileID: 0}
+    - target: {fileID: 7242563728492524847, guid: 679e140928b0c964c92a4fd6d73669c7, type: 3}
+      propertyPath: m_BlockingMask.m_Bits
+      value: 3895
+      objectReference: {fileID: 0}
     - target: {fileID: 7242563728687965119, guid: 679e140928b0c964c92a4fd6d73669c7, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
