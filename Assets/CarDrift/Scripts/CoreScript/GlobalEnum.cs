@@ -39,3 +39,8 @@ public enum RaceState
     Racing,
     Finished
 }
+public enum ControllerType
+{
+    Player,
+    AI
+}
