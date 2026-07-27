@@ -42,5 +42,6 @@ public enum RaceState
 public enum ControllerType
 {
     Player,
-    AI
+    AI,
+    Menu
 }
