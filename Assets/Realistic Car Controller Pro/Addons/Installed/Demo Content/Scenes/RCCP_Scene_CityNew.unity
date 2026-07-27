@@ -2432,6 +2432,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: RCCP_Canvas
       objectReference: {fileID: 0}
+    - target: {fileID: 7242563728492524847, guid: 679e140928b0c964c92a4fd6d73669c7, type: 3}
+      propertyPath: m_BlockingMask.m_Bits
+      value: 3895
+      objectReference: {fileID: 0}
     - target: {fileID: 7242563728687965119, guid: 679e140928b0c964c92a4fd6d73669c7, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -16000,14 +16004,14 @@ Light:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 824834497}
   m_Enabled: 1
-  serializedVersion: 12
+  serializedVersion: 11
   m_Type: 1
   m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
   m_Intensity: 1.25
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
-  m_CookieSize2D: {x: 10, y: 10}
+  m_CookieSize: 10
   m_Shadows:
     m_Type: 2
     m_Resolution: -1
