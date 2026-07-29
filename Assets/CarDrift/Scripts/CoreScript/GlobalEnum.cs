@@ -45,3 +45,11 @@ public enum ControllerType
     AI,
     Menu
 }
+
+public enum AIDifficulty
+{
+    Easy,
+    Medium,
+    Hard
+}
+
