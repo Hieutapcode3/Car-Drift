@@ -15,7 +15,6 @@ public class GameManager : MonoSingleton<GameManager>
     protected override void Awake()
     {
         base.Awake();
-
         if (Instance == this)
             DontDestroyOnLoad(gameObject);
     }

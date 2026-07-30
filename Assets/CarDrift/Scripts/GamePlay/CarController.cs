@@ -1,7 +1,15 @@
+using System.Threading.Tasks;
+using Sirenix.OdinInspector;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 public class CarController : MonoBehaviour
 {
+    [Header("Car Selection Settings")]
+    public CarType carType = CarType.Coupe;
+    public bool autoLoadOnStart = true;
+
     [Header("Controller Settings")]
     public ControllerType controllerType = ControllerType.Player;
     public bool isMenuModel = false;
@@ -13,7 +21,6 @@ public class CarController : MonoBehaviour
     public bool isDamageable = true;
 
     [Header("Menu Rotation Settings")]
-    [Tooltip("Tốc độ xoay tự động trong Menu (độ/giây)")]
     public float rotationSpeed = 30f;
     public Vector3 rotationAxis = Vector3.up;
     public bool freezePhysicsInMenu = true;
@@ -22,6 +29,10 @@ public class CarController : MonoBehaviour
     public RCCP_CarController carController;
     public RCCP_AI aiController;
     public RCCP_Damage damageController;
+
+    private GameObject currentCarInstance;
+    private AsyncOperationHandle<GameObject> loadHandle;
+
     public bool IsMenuModel => isMenuModel || controllerType == ControllerType.Menu;
 
     private void Awake()
@@ -29,9 +40,17 @@ public class CarController : MonoBehaviour
         FetchReferences();
     }
 
-    private void Start()
+    private async void Start()
     {
-        ApplyControlState();
+        if (autoLoadOnStart)
+        {
+            await LoadCarModelAsync(carType);
+        }
+        else
+        {
+            FetchReferences();
+            ApplyControlState();
+        }
     }
 
     private void OnEnable()
@@ -43,15 +62,99 @@ public class CarController : MonoBehaviour
     {
         FetchReferences();
     }
+
+    private void OnDestroy()
+    {
+        UnloadCurrentCar();
+    }
+
+    [Button]
+    public void TestLoadCarInEditor()
+    {
+        _ = LoadCarModelAsync(carType);
+    }
+    public async Task LoadCarModelAsync(CarType newCarType)
+    {
+        carType = newCarType;
+        string addressKey = carType.ToString();
+
+        Debug.Log($"[CarController] Đang tiến hành load model xe với Address Key: '{addressKey}'...");
+        UnloadCurrentCar();
+        try
+        {
+            loadHandle = Addressables.InstantiateAsync(addressKey, transform);
+            currentCarInstance = await loadHandle.Task;
+
+            if (loadHandle.Status == AsyncOperationStatus.Failed || currentCarInstance == null)
+            {
+                Debug.LogError($"[CarController] ❌ Load THẤT BẠI cho Address Key: '{addressKey}'. Vui lòng kiểm tra lại tên Key trong Addressables Groups!");
+                return;
+            }
+            currentCarInstance.transform.localPosition = Vector3.zero;
+            currentCarInstance.transform.localRotation = Quaternion.identity;
+            currentCarInstance.transform.localScale = Vector3.one;
+            Debug.Log($"[CarController] ✅ Load THÀNH CÔNG model xe: '{addressKey}'!");
+            FetchReferences();
+            ApplyDamageSettings();
+            ApplyControlState();
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"[CarController] ❌ Ngoại lệ khi load Addressable '{addressKey}': {ex.Message}");
+        }
+    }
+    public void SetCarType(CarType newCarType)
+    {
+        _ = LoadCarModelAsync(newCarType);
+    }
+    public void UnloadCurrentCar()
+    {
+        carController = null;
+        aiController = null;
+        damageController = null;
+
+        if (currentCarInstance != null)
+        {
+            if (loadHandle.IsValid())
+            {
+                Addressables.ReleaseInstance(currentCarInstance);
+            }
+            else
+            {
+                Destroy(currentCarInstance);
+            }
+            currentCarInstance = null;
+        }
+        foreach (Transform child in transform)
+        {
+            if (child.GetComponent<RCCP_CarController>() != null)
+            {
+                Destroy(child.gameObject);
+            }
+        }
+    }
+
     public void FetchReferences()
     {
+        if (currentCarInstance != null)
+        {
+            carController = currentCarInstance.GetComponent<RCCP_CarController>();
+            if (carController == null)
+            {
+                carController = currentCarInstance.GetComponentInChildren<RCCP_CarController>();
+            }
+        }
+
         if (carController == null)
         {
             foreach (Transform child in transform)
             {
                 carController = child.GetComponent<RCCP_CarController>();
                 if (carController != null)
+                {
+                    currentCarInstance = child.gameObject;
                     break;
+                }
             }
 
             if (carController == null)
@@ -75,6 +178,7 @@ public class CarController : MonoBehaviour
             damageController = GetComponentInChildren<RCCP_Damage>(true);
         }
     }
+
     public RCCP_AI GetOrCreateAIController()
     {
         if (aiController != null)
@@ -115,6 +219,7 @@ public class CarController : MonoBehaviour
                 otherAddonsTransform = newOtherAddonsObj.transform;
             }
         }
+
         Transform aiChildTransform = otherAddonsTransform.Find("AI");
         GameObject aiGo;
 
@@ -136,17 +241,32 @@ public class CarController : MonoBehaviour
 
         return aiController;
     }
-    public void ApplyControlState()
+
+    public void ApplyDamageSettings()
     {
+        if (damageController == null && carController != null)
+        {
+            damageController = carController.GetComponentInChildren<RCCP_Damage>(true);
+        }
+
         if (damageController != null)
         {
             damageController.enabled = isDamageable;
         }
-        RCCP_DetachablePart[] detachableParts = GetComponentsInChildren<RCCP_DetachablePart>(true);
-        foreach (RCCP_DetachablePart part in detachableParts)
+
+        if (carController != null)
         {
-            part.enabled = isDamageable;
+            RCCP_DetachablePart[] detachableParts = carController.GetComponentsInChildren<RCCP_DetachablePart>(true);
+            foreach (RCCP_DetachablePart part in detachableParts)
+            {
+                part.enabled = isDamageable;
+            }
         }
+    }
+
+    public void ApplyControlState()
+    {
+        ApplyDamageSettings();
 
         if (IsMenuModel)
         {
@@ -174,14 +294,25 @@ public class CarController : MonoBehaviour
                 ApplyAIDifficulty(aiDifficulty);
             }
         }
-        else // Player controller
+        else
         {
             if (aiController != null)
             {
                 aiController.enabled = false;
             }
+
+            if (carController != null)
+            {
+                carController.SetCanControl(true);
+
+                if (RCCP_SceneManager.Instance != null)
+                {
+                    RCCP_SceneManager.Instance.RegisterPlayer(carController, true);
+                }
+            }
         }
     }
+
     public void ApplyAIDifficulty(AIDifficulty difficulty)
     {
         if (aiController == null)
@@ -215,6 +346,7 @@ public class CarController : MonoBehaviour
                 break;
         }
     }
+
     public void SetKinematicAllParts(bool kinematic)
     {
         Rigidbody[] allRigidbodies = GetComponentsInChildren<Rigidbody>(true);
@@ -235,5 +367,7 @@ public class CarController : MonoBehaviour
             transform.Rotate(rotationAxis * (rotationSpeed * Time.deltaTime), Space.Self);
         }
     }
+
 }
+
 
