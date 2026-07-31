@@ -249,17 +249,38 @@ public class CarController : MonoBehaviour
             damageController = carController.GetComponentInChildren<RCCP_Damage>(true);
         }
 
-        if (damageController != null)
+        if (!isDamageable)
         {
-            damageController.enabled = isDamageable;
-        }
-
-        if (carController != null)
-        {
-            RCCP_DetachablePart[] detachableParts = carController.GetComponentsInChildren<RCCP_DetachablePart>(true);
-            foreach (RCCP_DetachablePart part in detachableParts)
+            // Xóa hoàn toàn RCCP_Damage khỏi carController
+            if (damageController != null)
             {
-                part.enabled = isDamageable;
+                Destroy(damageController);
+                damageController = null;
+            }
+
+            // Xóa hoàn toàn tất cả RCCP_DetachablePart
+            if (carController != null)
+            {
+                RCCP_DetachablePart[] detachableParts = carController.GetComponentsInChildren<RCCP_DetachablePart>(true);
+                foreach (RCCP_DetachablePart part in detachableParts)
+                {
+                    Destroy(part);
+                }
+            }
+        }
+        else
+        {
+            // Bật Damage nếu isDamageable = true
+            if (damageController != null)
+                damageController.enabled = true;
+
+            if (carController != null)
+            {
+                RCCP_DetachablePart[] detachableParts = carController.GetComponentsInChildren<RCCP_DetachablePart>(true);
+                foreach (RCCP_DetachablePart part in detachableParts)
+                {
+                    part.enabled = true;
+                }
             }
         }
     }

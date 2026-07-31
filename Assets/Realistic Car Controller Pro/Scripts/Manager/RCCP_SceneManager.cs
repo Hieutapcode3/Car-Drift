@@ -16,7 +16,8 @@ using System.Threading.Tasks;
 /// Scene manager that contains current player vehicle, current player camera, current player UI, current player character, recording/playing mechanim, and other vehicles as well.
 /// </summary>
 [AddComponentMenu("BoneCracker Games/Realistic Car Controller Pro/RCCP Scene Manager")]
-public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager> {
+public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager>
+{
 
     /// <summary>
     /// Current active player vehicle.
@@ -68,7 +69,8 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager> {
     /// </summary>
     public Terrain[] allTerrains;
 
-    public class Terrains {
+    public class Terrains
+    {
 
         //	Terrain data.
         public Terrain terrain;
@@ -88,7 +90,8 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager> {
     private bool asyncAttempted = false;
     private bool asyncReceived = false;
 
-    private void Awake() {
+    private void Awake()
+    {
 
         //  Listening events.
         RCCP_Events.OnRCCPCameraSpawned += RCCP_Events_OnRCCPCameraSpawned;
@@ -121,7 +124,8 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager> {
     /// When RCCP vehicle is spawned.
     /// </summary>
     /// <param name="RCCP"></param>
-    private void RCCP_Events_OnRCCPSpawned(RCCP_CarController RCCP) {
+    private void RCCP_Events_OnRCCPSpawned(RCCP_CarController RCCP)
+    {
 
         //  If all vehicles list doesn't contain spawned vehicle, add it to the list.
         if (!allVehicles.Contains(RCCP))
@@ -133,7 +137,8 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager> {
 
     }
 
-    private void RCCP_Events_OnRCCPAISpawned(RCCP_CarController AI) {
+    private void RCCP_Events_OnRCCPAISpawned(RCCP_CarController AI)
+    {
 
         //  If all vehicles list doesn't contain spawned vehicle, add it to the list.
         if (!allVehicles.Contains(AI))
@@ -145,7 +150,8 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager> {
     /// When RCCP Camera spawned.
     /// </summary>
     /// <param name="BCGCamera"></param>
-    private void RCCP_Events_OnRCCPCameraSpawned(RCCP_Camera cam) {
+    private void RCCP_Events_OnRCCPCameraSpawned(RCCP_Camera cam)
+    {
 
         activePlayerCamera = cam;
 
@@ -155,7 +161,8 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager> {
     /// When RCCP Canvas spawned.
     /// </summary>
     /// <param name="UI"></param>
-    private void RCCP_Events_OnRCCPUISpawned(RCCP_UIManager UI) {
+    private void RCCP_Events_OnRCCPUISpawned(RCCP_UIManager UI)
+    {
 
         activePlayerCanvas = UI;
 
@@ -169,7 +176,8 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager> {
     /// When a vehicle destroyed.
     /// </summary>
     /// <param name="RCCP"></param>
-    private void RCCP_Events_OnRCCPPlayerDestroyed(RCCP_CarController RCCP) {
+    private void RCCP_Events_OnRCCPPlayerDestroyed(RCCP_CarController RCCP)
+    {
 
         if (allVehicles.Contains(RCCP))
             allVehicles.Remove(RCCP);
@@ -180,7 +188,8 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager> {
     /// When an ai vehicle destroyed.
     /// </summary>
     /// <param name="RCCP"></param>
-    private void RCCP_Events_OnRCCPAIDestroyed(RCCP_CarController AI) {
+    private void RCCP_Events_OnRCCPAIDestroyed(RCCP_CarController AI)
+    {
 
         if (allVehicles.Contains(AI))
             allVehicles.Remove(AI);
@@ -189,7 +198,8 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager> {
 
     #endregion
 
-    private void Start() {
+    private void Start()
+    {
 
         //  Getting all terrains.
         StartCoroutine(GetAllTerrains());
@@ -221,9 +231,11 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager> {
     }
 #endif
 
-    private IEnumerator CheckMT() {
+    private IEnumerator CheckMT()
+    {
 
-        if (!RCCPSettings.multithreading) {
+        if (!RCCPSettings.multithreading)
+        {
 
             asyncAttempted = false;
             asyncReceived = false;
@@ -239,7 +251,8 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager> {
 
         float timer = 1f;
 
-        while (timer > 0) {
+        while (timer > 0)
+        {
 
             timer -= Time.deltaTime;
             yield return null;
@@ -258,7 +271,8 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager> {
 
     }
 
-    private async void CheckingMT() {
+    private async void CheckingMT()
+    {
 
         asyncAttempted = true;
         asyncReceived = false;
@@ -273,20 +287,24 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager> {
     /// Getting all terrains.
     /// </summary>
     /// <returns></returns>
-    public IEnumerator GetAllTerrains() {
+    public IEnumerator GetAllTerrains()
+    {
 
         yield return new WaitForFixedUpdate();
         allTerrains = Terrain.activeTerrains;
         yield return new WaitForFixedUpdate();
 
         //  If terrains found...
-        if (allTerrains != null && allTerrains.Length >= 1) {
+        if (allTerrains != null && allTerrains.Length >= 1)
+        {
 
             terrains = new Terrains[allTerrains.Length];
 
-            for (int i = 0; i < allTerrains.Length; i++) {
+            for (int i = 0; i < allTerrains.Length; i++)
+            {
 
-                if (allTerrains[i].terrainData == null) {
+                if (allTerrains[i].terrainData == null)
+                {
 
                     Debug.LogError("Terrain data of the " + allTerrains[i].transform.name + " is missing! Check the terrain data...");
                     yield return null;
@@ -296,7 +314,8 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager> {
             }
 
             //  Initializing terrains.
-            for (int i = 0; i < terrains.Length; i++) {
+            for (int i = 0; i < terrains.Length; i++)
+            {
 
                 terrains[i] = new Terrains();
                 terrains[i].terrain = allTerrains[i];
@@ -316,10 +335,12 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager> {
 
     }
 
-    private void Update() {
+    private void Update()
+    {
 
         //  When player vehicle changed...
-        if (activePlayerVehicle) {
+        if (activePlayerVehicle)
+        {
 
             if (activePlayerVehicle != lastActivePlayerVehicle)
                 RCCP_Events.Event_OnVehicleChanged();
@@ -345,7 +366,8 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager> {
     /// Registers the target vehicle as player vehicle.
     /// </summary>
     /// <param name="playerVehicle"></param>
-    public void RegisterPlayer(RCCP_CarController playerVehicle) {
+    public void RegisterPlayer(RCCP_CarController playerVehicle)
+    {
 
         activePlayerVehicle = playerVehicle;
 
@@ -359,7 +381,8 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager> {
     /// </summary>
     /// <param name="playerVehicle"></param>
     /// <param name="isControllable"></param>
-    public void RegisterPlayer(RCCP_CarController playerVehicle, bool isControllable) {
+    public void RegisterPlayer(RCCP_CarController playerVehicle, bool isControllable)
+    {
 
         activePlayerVehicle = playerVehicle;
         activePlayerVehicle.SetCanControl(isControllable);
@@ -375,7 +398,8 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager> {
     /// <param name="playerVehicle"></param>
     /// <param name="isControllable"></param>
     /// <param name="engineState"></param>
-    public void RegisterPlayer(RCCP_CarController playerVehicle, bool isControllable, bool engineState) {
+    public void RegisterPlayer(RCCP_CarController playerVehicle, bool isControllable, bool engineState)
+    {
 
         activePlayerVehicle = playerVehicle;
         activePlayerVehicle.SetCanControl(isControllable);
@@ -389,7 +413,8 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager> {
     /// <summary>
     /// Deregisters the player vehicle.
     /// </summary>
-    public void DeRegisterPlayer() {
+    public void DeRegisterPlayer()
+    {
 
         if (activePlayerVehicle)
             activePlayerVehicle.SetCanControl(false);
@@ -404,7 +429,8 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager> {
     /// <summary>
     /// Checks UI canvas.
     /// </summary>
-    public void CheckCanvas() {
+    public void CheckCanvas()
+    {
 
         //if (!activePlayerVehicle || !activePlayerVehicle.canControl || !activePlayerVehicle.gameObject.activeInHierarchy || !activePlayerVehicle.enabled) {
 
@@ -422,7 +448,8 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager> {
     ///<summary>
     /// Sets new behavior.
     ///</summary>
-    public void SetBehavior(int behaviorIndex) {
+    public void SetBehavior(int behaviorIndex)
+    {
 
         RCCPSettings.overrideBehavior = true;
         RCCPSettings.behaviorSelectedIndex = behaviorIndex;
@@ -431,7 +458,8 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager> {
 
     }
 
-    public void SetMobileController(RCCP_Settings.MobileController mobileController) {
+    public void SetMobileController(RCCP_Settings.MobileController mobileController)
+    {
 
         RCCPSettings.mobileController = mobileController;
 
@@ -440,7 +468,8 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager> {
     /// <summary>
     /// Changes current camera mode.
     /// </summary>
-    public void ChangeCamera() {
+    public void ChangeCamera()
+    {
 
         if (activePlayerCamera)
             activePlayerCamera.ChangeCamera();
@@ -452,9 +481,11 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager> {
     /// </summary>
     /// <param name="position">Position.</param>
     /// <param name="rotation">Rotation.</param>
-    public void Transport(Vector3 position, Quaternion rotation) {
+    public void Transport(Vector3 position, Quaternion rotation)
+    {
 
-        if (activePlayerVehicle) {
+        if (activePlayerVehicle)
+        {
 
             RigidbodyInterpolation interpolation = activePlayerVehicle.Rigid.interpolation;
             activePlayerVehicle.Rigid.interpolation = RigidbodyInterpolation.None;
@@ -475,13 +506,16 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager> {
 
             RCCP_TrailerController trailer = activePlayerVehicle.ConnectedTrailer;
 
-            if (trailer) {
+            if (trailer)
+            {
 
                 Rigidbody trailerRigid = trailer.GetComponent<Rigidbody>();
 
-                if (trailerRigid) {
+                if (trailerRigid)
+                {
 
-                    if (trailerRigid) {
+                    if (trailerRigid)
+                    {
 
                         // Store original interpolation settings for trailer
                         RigidbodyInterpolation trailerInterpolation = trailerRigid.interpolation;
@@ -522,9 +556,11 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager> {
     /// <param name="vehicle"></param>
     /// <param name="position"></param>
     /// <param name="rotation"></param>
-    public void Transport(RCCP_CarController vehicle, Vector3 position, Quaternion rotation) {
+    public void Transport(RCCP_CarController vehicle, Vector3 position, Quaternion rotation)
+    {
 
-        if (vehicle) {
+        if (vehicle)
+        {
 
             RigidbodyInterpolation interpolation = vehicle.Rigid.interpolation;
             vehicle.Rigid.interpolation = RigidbodyInterpolation.None;
@@ -545,13 +581,16 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager> {
 
             RCCP_TrailerController trailer = vehicle.ConnectedTrailer;
 
-            if (trailer) {
+            if (trailer)
+            {
 
                 Rigidbody trailerRigid = trailer.GetComponent<Rigidbody>();
 
-                if (trailerRigid) {
+                if (trailerRigid)
+                {
 
-                    if (trailerRigid) {
+                    if (trailerRigid)
+                    {
 
                         // Store original interpolation settings for trailer
                         RigidbodyInterpolation trailerInterpolation = trailerRigid.interpolation;
@@ -586,11 +625,14 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager> {
 
     }
 
-    public void Transport(RCCP_CarController vehicle, Vector3 position, Quaternion rotation, bool resetVelocity) {
+    public void Transport(RCCP_CarController vehicle, Vector3 position, Quaternion rotation, bool resetVelocity)
+    {
 
-        if (vehicle) {
+        if (vehicle)
+        {
 
-            if (resetVelocity) {
+            if (resetVelocity)
+            {
 
                 RigidbodyInterpolation interpolation = vehicle.Rigid.interpolation;
                 vehicle.Rigid.interpolation = RigidbodyInterpolation.None;
@@ -611,7 +653,9 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager> {
 
                 Physics.SyncTransforms();
 
-            } else {
+            }
+            else
+            {
 
                 vehicle.Rigid.MovePosition(position);
                 vehicle.Rigid.MoveRotation(rotation);
@@ -624,14 +668,16 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager> {
 
     }
 
-    private void OnDisable() {
+    private void OnDisable()
+    {
 
         if (RCCPSettings.autoSaveLoadInputRebind)
             RCCP_RebindSaveLoad.Save();
 
     }
 
-    private void OnDestroy() {
+    private void OnDestroy()
+    {
 
         RCCP_Events.OnRCCPCameraSpawned -= RCCP_Events_OnRCCPCameraSpawned;
         RCCP_Events.OnRCCPSpawned -= RCCP_Events_OnRCCPSpawned;

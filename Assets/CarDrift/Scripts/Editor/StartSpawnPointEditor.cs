@@ -6,15 +6,12 @@ public class StartSpawnPointEditor : Editor
 {
     public override void OnInspectorGUI()
     {
-        // Draw mặc định các thuộc tính Inspector
         DrawDefaultInspector();
 
         StartSpawnPoint spawner = (StartSpawnPoint)target;
 
         EditorGUILayout.Space(15);
         EditorGUILayout.LabelField("🛠️ SPAWN POINT EDITOR TOOLS", EditorStyles.boldLabel);
-
-        // Nút Generate điểm Spawn
         GUI.backgroundColor = new Color(0.2f, 0.8f, 0.4f);
         if (GUILayout.Button("✨ Generate / Update Spawn Points", GUILayout.Height(35)))
         {
@@ -22,8 +19,6 @@ public class StartSpawnPointEditor : Editor
             spawner.GenerateSpawnPointsInEditor();
             EditorUtility.SetDirty(spawner);
         }
-
-        // Nút Clear điểm Spawn
         GUI.backgroundColor = new Color(0.9f, 0.3f, 0.3f);
         if (GUILayout.Button("🗑️ Clear All Spawn Points", GUILayout.Height(30)))
         {
@@ -36,8 +31,6 @@ public class StartSpawnPointEditor : Editor
         }
 
         GUI.backgroundColor = Color.white;
-
-        // Nút Test Spawn xe ngay lập tức khi đang ở Play Mode hoặc Editor Test
         if (Application.isPlaying)
         {
             EditorGUILayout.Space(10);

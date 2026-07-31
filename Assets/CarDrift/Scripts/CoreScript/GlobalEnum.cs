@@ -52,4 +52,13 @@ public enum AIDifficulty
     Medium,
     Hard
 }
+public enum GameState
+{
+    Loading,
+    Intro,
+    Playing,
+    Pause,
+    Win,
+    Lose
+}
 

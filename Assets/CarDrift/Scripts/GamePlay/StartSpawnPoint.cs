@@ -22,8 +22,13 @@ public class StartSpawnPoint : MonoBehaviour
     public int enemyCount = 3;
     public List<EnemySpawnConfig> enemySpawnConfigs = new List<EnemySpawnConfig>();
 
+    [Header("Racing Grid Layout Settings")]
+    [SerializeField] private Transform enemyStartPos;
+    public float backDistance = 6f;
+    public float sideOffset = 3f;
+    public bool startRight = true;
+
     [Header("Prefab References")]
-    [Tooltip("Prefab CarController để Instantiate xe Player và Enemy")]
     public GameObject carControllerPrefab;
 
     [Header("Options")]
@@ -157,6 +162,24 @@ public class StartSpawnPoint : MonoBehaviour
                 playerSpawnTransform = playerObj.transform;
             }
         }
+        // 2. Enemy Start Position Anchor
+        if (enemyStartPos == null)
+        {
+            Transform existingStart = transform.Find("EnemyStartPos");
+            if (existingStart != null)
+            {
+                enemyStartPos = existingStart;
+            }
+            else
+            {
+                GameObject startObj = new GameObject("EnemyStartPos");
+                startObj.transform.SetParent(transform);
+                startObj.transform.localPosition = new Vector3(3f, 0f, 0f);
+                startObj.transform.localRotation = Quaternion.identity;
+                enemyStartPos = startObj.transform;
+            }
+        }
+
         Transform enemyGroup = transform.Find("EnemySpawns");
         if (enemyGroup == null)
         {
@@ -166,6 +189,7 @@ public class StartSpawnPoint : MonoBehaviour
             groupObj.transform.localRotation = Quaternion.identity;
             enemyGroup = groupObj.transform;
         }
+
         while (enemySpawnConfigs.Count < enemyCount)
         {
             int index = enemySpawnConfigs.Count + 1;
@@ -182,6 +206,13 @@ public class StartSpawnPoint : MonoBehaviour
             enemySpawnConfigs.RemoveRange(enemyCount, enemySpawnConfigs.Count - enemyCount);
         }
 
+        if (enemyCount == 0) return;
+
+        // Lấy vị trí và hướng xoay mốc từ enemyStartPos
+        Vector3 anchorPos = enemyStartPos.position;
+        Quaternion anchorRot = enemyStartPos.rotation;
+
+        // Sinh và tự động xếp vị trí cho tất cả các điểm spawn (EnemySpawn_1 -> EnemySpawn_N)
         for (int i = 0; i < enemySpawnConfigs.Count; i++)
         {
             string childName = $"EnemySpawn_{i + 1}";
@@ -190,10 +221,18 @@ public class StartSpawnPoint : MonoBehaviour
             {
                 GameObject childObj = new GameObject(childName);
                 childObj.transform.SetParent(enemyGroup);
-                childObj.transform.localPosition = new Vector3((i + 1) * 3f, 0f, 0f);
-                childObj.transform.localRotation = Quaternion.identity;
                 child = childObj.transform;
             }
+
+            // Xe 1 (i = 0): Đặt đúng vị trí enemyStartPos
+            // Xe 2 (i = 1): Lùi 1 * backDistance, lệch Right (+) nếu startRight = true
+            // Xe 3 (i = 2): Lùi 2 * backDistance, lệch Left (-)
+            float sideSign = (i == 0) ? 0f : ((i % 2 != 0) ? (startRight ? 1f : -1f) : (startRight ? -1f : 1f));
+            Vector3 targetPos = anchorPos - (anchorRot * Vector3.forward * (i * backDistance)) + (anchorRot * Vector3.right * (sideSign * sideOffset));
+
+            child.position = targetPos;
+            child.rotation = anchorRot;
+
             enemySpawnConfigs[i].name = $"Enemy Spawn {i + 1} ({enemySpawnConfigs[i].carType})";
             enemySpawnConfigs[i].spawnTransform = child;
         }
@@ -202,6 +241,7 @@ public class StartSpawnPoint : MonoBehaviour
     public void ClearSpawnPointsInEditor()
     {
         playerSpawnTransform = null;
+        enemyStartPos = null;
         enemySpawnConfigs.Clear();
 
         for (int i = transform.childCount - 1; i >= 0; i--)
@@ -209,6 +249,16 @@ public class StartSpawnPoint : MonoBehaviour
             DestroyImmediate(transform.GetChild(i).gameObject);
         }
     }
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (!Application.isPlaying && enemySpawnConfigs != null && enemySpawnConfigs.Count > 0)
+        {
+            GenerateSpawnPointsInEditor();
+        }
+    }
+#endif
 
     #endregion
 
@@ -222,6 +272,14 @@ public class StartSpawnPoint : MonoBehaviour
             Gizmos.DrawWireCube(playerSpawnTransform.position + Vector3.up * 0.75f, new Vector3(2f, 1.5f, 4f));
             Gizmos.DrawRay(playerSpawnTransform.position + Vector3.up * 0.75f, playerSpawnTransform.forward * 3f);
         }
+
+        if (enemyStartPos != null)
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireSphere(enemyStartPos.position + Vector3.up * 0.75f, 0.5f);
+            Gizmos.DrawRay(enemyStartPos.position + Vector3.up * 0.75f, enemyStartPos.forward * 4f);
+        }
+
         for (int i = 0; i < enemySpawnConfigs.Count; i++)
         {
             var config = enemySpawnConfigs[i];

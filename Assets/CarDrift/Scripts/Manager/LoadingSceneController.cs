@@ -6,7 +6,6 @@ public class LoadingSceneController : MonoBehaviour
 {
     [SerializeField] private Slider progressBar;
     [SerializeField] private float minimumLoadingTime = 0.5f;
-    [SerializeField] private string nextSceneName = GameManager.MenuSceneName;
 
     private IEnumerator Start()
     {
@@ -22,6 +21,5 @@ public class LoadingSceneController : MonoBehaviour
             yield return null;
         }
 
-        GameManager.Instance.LoadScene(nextSceneName);
     }
 }
