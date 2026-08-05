@@ -3,7 +3,9 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 3
-  tags: []
+  tags:
+  - Ground
+  - Road
   layers:
   - Default
   - TransparentFX
@@ -17,8 +19,8 @@ TagManager:
   - RCCP_WheelCollider
   - RCCP_DetachablePart
   - RCCP_Prop
-  - 
-  - 
+  - Obstacle
+  - Road
   - 
   - 
   - 

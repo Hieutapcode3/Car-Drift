@@ -1,4 +1,4 @@
-﻿//----------------------------------------------
+//----------------------------------------------
 //        Realistic Car Controller Pro
 //
 // Copyright © 2014 - 2025 BoneCracker Games
@@ -84,28 +84,103 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager>
 
     }
 
-    public Terrains[] terrains;     //  All collected terrains with custom class.
-    [HideInInspector] public bool terrainsInitialized = false;        //  All terrains are initialized yet?
+    public Terrains[] terrains;
+    [HideInInspector] public bool terrainsInitialized = false;
 
     private bool asyncAttempted = false;
     private bool asyncReceived = false;
 
+    [Header("Race Rank Settings")]
+    public bool autoUpdateRaceRanks = true;
+    public float raceRankUpdateInterval = 0.05f;
+    private float raceRankTimer = 0f;
+    public void UpdateVehicleRanks()
+    {
+        CarController[] carControllers = FindObjectsByType<CarController>(FindObjectsSortMode.None);
+        if (carControllers == null || carControllers.Length == 0)
+            return;
+
+        RCCP_AIWaypointsContainer waypointsContainer = FindFirstObjectByType<RCCP_AIWaypointsContainer>();
+
+        List<(CarController car, float progressScore)> vehicleScores = new List<(CarController, float)>();
+
+        foreach (CarController car in carControllers)
+        {
+            if (car == null || car.IsMenuModel || !car.gameObject.activeInHierarchy)
+                continue;
+
+            float score = 0f;
+            Vector3 carPos = car.transform.position;
+
+            if (waypointsContainer != null && waypointsContainer.waypoints != null && waypointsContainer.waypoints.Count > 0)
+            {
+                int waypointCount = waypointsContainer.waypoints.Count;
+                int currentWpIdx = 0;
+                int lap = 0;
+
+                RCCP_AI ai = car.aiController != null ? car.aiController : car.GetComponentInChildren<RCCP_AI>();
+
+                if (ai != null)
+                {
+                    lap = ai.lap;
+                    currentWpIdx = Mathf.Clamp(ai.currentWaypointIndex, 0, waypointCount - 1);
+                }
+                else
+                {
+                    float minSqDistance = float.MaxValue;
+                    for (int i = 0; i < waypointCount; i++)
+                    {
+                        if (waypointsContainer.waypoints[i] == null) continue;
+                        float sqDist = (carPos - waypointsContainer.waypoints[i].transform.position).sqrMagnitude;
+                        if (sqDist < minSqDistance)
+                        {
+                            minSqDistance = sqDist;
+                            currentWpIdx = i;
+                        }
+                    }
+                }
+                int nextWpIdx = (currentWpIdx + 1) % waypointCount;
+
+                Vector3 currWpPos = waypointsContainer.waypoints[currentWpIdx] != null ? waypointsContainer.waypoints[currentWpIdx].transform.position : carPos;
+                Vector3 nextWpPos = waypointsContainer.waypoints[nextWpIdx] != null ? waypointsContainer.waypoints[nextWpIdx].transform.position : currWpPos;
+
+                Vector3 segment = nextWpPos - currWpPos;
+                float segmentLengthSq = segment.sqrMagnitude;
+
+                float segmentProgress = 0f;
+                if (segmentLengthSq > 0.001f)
+                {
+                    Vector3 carToCurr = carPos - currWpPos;
+                    segmentProgress = Mathf.Clamp01(Vector3.Dot(carToCurr, segment) / segmentLengthSq);
+                }
+                score = (lap * waypointCount * 1000f) + (currentWpIdx * 1000f) + (segmentProgress * 1000f);
+            }
+            else
+            {
+                float speed = car.carController != null ? car.carController.speed : 0f;
+                score = car.transform.position.z + (speed * 0.1f);
+            }
+
+            vehicleScores.Add((car, score));
+        }
+        vehicleScores.Sort((a, b) => b.progressScore.CompareTo(a.progressScore));
+        for (int i = 0; i < vehicleScores.Count; i++)
+        {
+            int rank = i + 1;
+            vehicleScores[i].car.UpdateRaceRank(rank);
+        }
+    }
+
     private void Awake()
     {
-
-        //  Listening events.
         RCCP_Events.OnRCCPCameraSpawned += RCCP_Events_OnRCCPCameraSpawned;
         RCCP_Events.OnRCCPSpawned += RCCP_Events_OnRCCPSpawned;
         RCCP_Events.OnRCCPAISpawned += RCCP_Events_OnRCCPAISpawned;
         RCCP_Events.OnRCCPUISpawned += RCCP_Events_OnRCCPUISpawned;
         RCCP_Events.OnRCCPDestroyed += RCCP_Events_OnRCCPPlayerDestroyed;
         RCCP_Events.OnRCCPAIDestroyed += RCCP_Events_OnRCCPAIDestroyed;
-
-        //  Instantiate telemetry UI if it's enabled in RCCP Settings.
         if (RCCPSettings.useTelemetry)
             Instantiate(RCCPSettings.RCCPTelemetry, Vector3.zero, Quaternion.identity);
-
-        // Overriding Fixed TimeStep.
         if (RCCPSettings.overrideFixedTimeStep)
             Time.fixedDeltaTime = RCCPSettings.fixedTimeStep;
 
@@ -119,19 +194,11 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager>
     }
 
     #region ONSPAWNED
-
-    /// <summary>
-    /// When RCCP vehicle is spawned.
-    /// </summary>
-    /// <param name="RCCP"></param>
     private void RCCP_Events_OnRCCPSpawned(RCCP_CarController RCCP)
     {
 
-        //  If all vehicles list doesn't contain spawned vehicle, add it to the list.
         if (!allVehicles.Contains(RCCP))
             allVehicles.Add(RCCP);
-
-        //  Registers the last spawned vehicle as player vehicle.
         if (registerLastVehicleAsPlayer)
             RegisterPlayer(RCCP);
 
@@ -140,7 +207,6 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager>
     private void RCCP_Events_OnRCCPAISpawned(RCCP_CarController AI)
     {
 
-        //  If all vehicles list doesn't contain spawned vehicle, add it to the list.
         if (!allVehicles.Contains(AI))
             allVehicles.Add(AI);
 
@@ -337,7 +403,15 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager>
 
     private void Update()
     {
-
+        if (autoUpdateRaceRanks)
+        {
+            raceRankTimer += Time.deltaTime;
+            if (raceRankTimer >= raceRankUpdateInterval)
+            {
+                raceRankTimer = 0f;
+                UpdateVehicleRanks();
+            }
+        }
         //  When player vehicle changed...
         if (activePlayerVehicle)
         {

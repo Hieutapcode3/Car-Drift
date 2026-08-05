@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Sirenix.OdinInspector;
+using TMPro;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -26,42 +27,45 @@ public class CarController : MonoBehaviour
     public bool freezePhysicsInMenu = true;
 
     [Header("References")]
+    [SerializeField] private TextMeshPro indexRacePref;
     public RCCP_CarController carController;
     public RCCP_AI aiController;
     public RCCP_Damage damageController;
 
+    private TextMeshPro spawnedIndexRaceText;
     private GameObject currentCarInstance;
     private AsyncOperationHandle<GameObject> loadHandle;
 
+    public TextMeshPro SpawnedIndexRaceText => spawnedIndexRaceText;
     public bool IsMenuModel => isMenuModel || controllerType == ControllerType.Menu;
 
-    private void Awake()
-    {
-        FetchReferences();
-    }
+    // private void Awake()
+    // {
+    //     FetchReferences();
+    // }
 
-    private async void Start()
-    {
-        if (autoLoadOnStart)
-        {
-            await LoadCarModelAsync(carType);
-        }
-        else
-        {
-            FetchReferences();
-            ApplyControlState();
-        }
-    }
+    // private async void Start()
+    // {
+    //     if (autoLoadOnStart)
+    //     {
+    //         await LoadCarModelAsync(carType);
+    //     }
+    //     else
+    //     {
+    //         FetchReferences();
+    //         ApplyControlState();
+    //     }
+    // }
 
     private void OnEnable()
     {
         ApplyControlState();
     }
 
-    private void OnValidate()
-    {
-        FetchReferences();
-    }
+    // private void OnValidate()
+    // {
+    //     FetchReferences();
+    // }
 
     private void OnDestroy()
     {
@@ -113,6 +117,12 @@ public class CarController : MonoBehaviour
         aiController = null;
         damageController = null;
 
+        if (spawnedIndexRaceText != null)
+        {
+            Destroy(spawnedIndexRaceText.gameObject);
+            spawnedIndexRaceText = null;
+        }
+
         if (currentCarInstance != null)
         {
             if (loadHandle.IsValid())
@@ -159,6 +169,15 @@ public class CarController : MonoBehaviour
 
             if (carController == null)
             {
+                carController = GetComponentInChildren<RCCP_CarController>(true);
+                if (carController != null && carController.gameObject != gameObject)
+                {
+                    currentCarInstance = carController.gameObject;
+                }
+            }
+
+            if (carController == null)
+            {
                 carController = GetComponent<RCCP_CarController>();
             }
         }
@@ -176,6 +195,61 @@ public class CarController : MonoBehaviour
         if (damageController == null)
         {
             damageController = GetComponentInChildren<RCCP_Damage>(true);
+        }
+
+        if (indexRacePref != null && !IsMenuModel && controllerType == ControllerType.AI)
+        {
+            SpawnIndexRaceText();
+        }
+    }
+    public void SpawnIndexRaceText()
+    {
+        if (indexRacePref == null || IsMenuModel || controllerType != ControllerType.AI)
+            return;
+
+        // Ưu tiên cao nhất: carController.transform > currentCarInstance.transform > transform (this)
+        Transform targetParent = null;
+        if (carController != null)
+            targetParent = carController.transform;
+        else if (currentCarInstance != null)
+            targetParent = currentCarInstance.transform;
+        else
+            targetParent = transform;
+
+        if (spawnedIndexRaceText == null)
+        {
+            spawnedIndexRaceText = Instantiate(indexRacePref, targetParent);
+            spawnedIndexRaceText.transform.localPosition = new Vector3(0f, 2.5f, 0f);
+            spawnedIndexRaceText.transform.localRotation = Quaternion.identity;
+
+            if (!spawnedIndexRaceText.GetComponent<UIRotate>())
+            {
+                spawnedIndexRaceText.gameObject.AddComponent<UIRotate>();
+            }
+        }
+        else
+        {
+            // Nếu đã sinh ra trước đó nhưng chưa thuộc targetParent (do carController được lấy sau)
+            if (spawnedIndexRaceText.transform.parent != targetParent)
+            {
+                spawnedIndexRaceText.transform.SetParent(targetParent, false);
+                spawnedIndexRaceText.transform.localPosition = new Vector3(0f, 2.5f, 0f);
+            }
+        }
+    }
+    public void UpdateRaceRank(int rank)
+    {
+        if (IsMenuModel || controllerType != ControllerType.AI)
+            return;
+
+        if (spawnedIndexRaceText == null)
+        {
+            SpawnIndexRaceText();
+        }
+
+        if (spawnedIndexRaceText != null)
+        {
+            spawnedIndexRaceText.text = rank.ToString();
         }
     }
 
