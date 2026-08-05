@@ -51,5 +51,12 @@
         "temp/": true,
         "Temp/": true
     },
+    "editor.quickSuggestions": {
+        "other": true,
+        "comments": true,
+        "strings": true
+    },
+    "editor.suggestOnTriggerCharacters": true,
+    "editor.inlineSuggest.enabled": true,
     "dotnet.defaultSolution": "Car-Drift.slnx"
 }

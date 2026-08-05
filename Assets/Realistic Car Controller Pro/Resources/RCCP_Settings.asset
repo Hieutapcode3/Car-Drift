@@ -14,11 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   multithreading: 1
   behaviorSelectedIndex: 0
-  overrideFPS: 0
+  overrideFPS: 1
   overrideFixedTimeStep: 0
   fixedTimeStep: 0.02
   maxAngularVelocity: 8
-  maxFPS: -1
+  maxFPS: 120
   overrideBehavior: 0
   behaviorTypes:
   - behaviorName: Balanced
