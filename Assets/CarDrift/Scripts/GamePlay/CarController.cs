@@ -21,6 +21,26 @@ public class CarController : MonoBehaviour
     [Header("Damage Settings")]
     public bool isDamageable = true;
 
+    [Header("Paint Settings")]
+    public ColorParamSO colorParamSO;
+    public CarColorType carColorType = CarColorType.Red;
+    public bool useCustomColor = false;
+    public bool randomColorForAI = true;
+
+    [Button]
+    public void SetRandomColor()
+    {
+        if (controllerType != ControllerType.AI)
+            return;
+
+        System.Array values = System.Enum.GetValues(typeof(CarColorType));
+        if (values.Length > 0)
+        {
+            CarColorType randomColor = (CarColorType)values.GetValue(UnityEngine.Random.Range(0, values.Length));
+            SetCarColor(randomColor);
+        }
+    }
+
     [Header("Menu Rotation Settings")]
     public float rotationSpeed = 30f;
     public Vector3 rotationAxis = Vector3.up;
@@ -57,16 +77,57 @@ public class CarController : MonoBehaviour
     //     }
     // }
 
-    private void OnEnable()
-    {
-        ApplyControlState();
-    }
-
-    // private void OnValidate()
+    // private void OnEnable()
     // {
-    //     FetchReferences();
+    //     ApplyControlState();
+    //     if (useCustomColor)
+    //     {
+    //         ApplyCarColor();
+    //     }
     // }
 
+    public Color GetCurrentColor()
+    {
+        if (colorParamSO != null)
+        {
+            return colorParamSO.GetColor(carColorType);
+        }
+        else if (ColorParamSO.Instance != null)
+        {
+            return ColorParamSO.Instance.GetColor(carColorType);
+        }
+        return Color.white;
+    }
+
+    [Button]
+    public void ApplyCarColor()
+    {
+        if (carController == null)
+            FetchReferences();
+
+        Color targetColor = GetCurrentColor();
+
+        if (carController != null && carController.Customizer != null && carController.Customizer.PaintManager != null)
+        {
+            var paintManager = carController.Customizer.PaintManager;
+            if (paintManager.paints == null || paintManager.paints.Length == 0)
+            {
+                paintManager.GetAllPainters();
+            }
+            paintManager.Paint(targetColor);
+        }
+        else
+        {
+            Debug.LogWarning($"[CarController] Không thể đổi màu xe '{gameObject.name}'. Thiếu RCCP_Customizer hoặc PaintManager!");
+        }
+    }
+
+    public void SetCarColor(CarColorType newColorType)
+    {
+        carColorType = newColorType;
+        useCustomColor = true;
+        ApplyCarColor();
+    }
     private void OnDestroy()
     {
         UnloadCurrentCar();
@@ -101,6 +162,11 @@ public class CarController : MonoBehaviour
             FetchReferences();
             ApplyDamageSettings();
             ApplyControlState();
+
+            if (useCustomColor)
+            {
+                ApplyCarColor();
+            }
         }
         catch (System.Exception ex)
         {
@@ -206,8 +272,6 @@ public class CarController : MonoBehaviour
     {
         if (indexRacePref == null || IsMenuModel || controllerType != ControllerType.AI)
             return;
-
-        // Ưu tiên cao nhất: carController.transform > currentCarInstance.transform > transform (this)
         Transform targetParent = null;
         if (carController != null)
             targetParent = carController.transform;
@@ -229,7 +293,6 @@ public class CarController : MonoBehaviour
         }
         else
         {
-            // Nếu đã sinh ra trước đó nhưng chưa thuộc targetParent (do carController được lấy sau)
             if (spawnedIndexRaceText.transform.parent != targetParent)
             {
                 spawnedIndexRaceText.transform.SetParent(targetParent, false);
@@ -325,14 +388,11 @@ public class CarController : MonoBehaviour
 
         if (!isDamageable)
         {
-            // Xóa hoàn toàn RCCP_Damage khỏi carController
             if (damageController != null)
             {
                 Destroy(damageController);
                 damageController = null;
             }
-
-            // Xóa hoàn toàn tất cả RCCP_DetachablePart
             if (carController != null)
             {
                 RCCP_DetachablePart[] detachableParts = carController.GetComponentsInChildren<RCCP_DetachablePart>(true);
@@ -344,7 +404,6 @@ public class CarController : MonoBehaviour
         }
         else
         {
-            // Bật Damage nếu isDamageable = true
             if (damageController != null)
                 damageController.enabled = true;
 
@@ -387,6 +446,11 @@ public class CarController : MonoBehaviour
             {
                 aiController.enabled = true;
                 ApplyAIDifficulty(aiDifficulty);
+            }
+
+            if (randomColorForAI)
+            {
+                SetRandomColor();
             }
         }
         else

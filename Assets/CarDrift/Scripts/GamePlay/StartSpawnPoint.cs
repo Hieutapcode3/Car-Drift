@@ -65,6 +65,8 @@ public class StartSpawnPoint : MonoBehaviour
                 playerCar.isDamageable = false;
                 playerCar.controllerType = ControllerType.Player;
                 playerCar.carType = playerCarType;
+                playerCar.randomColorForAI = false;
+                playerCar.useCustomColor = false;
 
                 await playerCar.LoadCarModelAsync(playerCarType);
                 spawnedCars.Add(playerCar);

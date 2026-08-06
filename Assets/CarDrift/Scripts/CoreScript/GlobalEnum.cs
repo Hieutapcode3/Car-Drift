@@ -62,3 +62,19 @@ public enum GameState
     Lose
 }
 
+public enum CarColorType
+{
+    Red,
+    Orange,
+    Yellow,
+    Green,
+    Cyan,
+    Blue,
+    Purple,
+    Magenta,
+    White,
+    Black,
+    Gray
+}
+
+
