@@ -16,6 +16,9 @@ public class RaceProgressTracker : MonoSingleton<RaceProgressTracker>
     [Tooltip("Distance (m) within which the player is considered to have 'passed' a waypoint.")]
     public float playerWpPassDistance = 20f;
 
+    [Header("Post-Finish Settings")]
+    public int stopAtWaypointAfterFinish = 10;
+
     [Header("References")]
     public RCCP_AIWaypointsContainer waypointsContainer;
 
@@ -37,6 +40,9 @@ public class RaceProgressTracker : MonoSingleton<RaceProgressTracker>
 
     private readonly Dictionary<CarController, LapTrackData> playerLapData
         = new Dictionary<CarController, LapTrackData>();
+
+    private readonly HashSet<CarController> finishedCars = new HashSet<CarController>();
+    public IReadOnlyCollection<CarController> FinishedCars => finishedCars;
 
     // Per-AI rank stabilization
     private class RankStabilityData
@@ -215,6 +221,9 @@ public class RaceProgressTracker : MonoSingleton<RaceProgressTracker>
 
             float points = CalcTotalPoints(car, out int wpIdx, out int laps);
 
+            // Kiểm tra xe đã hoàn thành và xử lý dừng xe cho AI nếu tới waypoint thứ 10
+            CheckVehicleFinish(car, laps, wpIdx);
+
             float distInLap = (wpCumDist != null && wpIdx < wpCumDist.Length)
                 ? wpCumDist[wpIdx] : 0f;
             float pct = totalRaceDistance > 0f
@@ -280,6 +289,53 @@ public class RaceProgressTracker : MonoSingleton<RaceProgressTracker>
     {
         if (playerLapData.TryGetValue(car, out var d)) return d.completedLaps;
         return 0;
+    }
+
+    public bool IsVehicleFinished(CarController car)
+    {
+        return car != null && finishedCars.Contains(car);
+    }
+
+    private void CheckVehicleFinish(CarController car, int laps, int currentWpIdx)
+    {
+        bool hasFinished = laps >= totalLaps;
+
+        if (hasFinished)
+        {
+            if (!finishedCars.Contains(car))
+            {
+                finishedCars.Add(car);
+                // Debug.Log($"[RaceProgressTracker] 🏁 Xe '{car.name}' ({car.controllerType}) ĐÃ HOÀN THÀNH CUỘC ĐUA! ({laps}/{totalLaps} laps)");
+
+                // Thêm vào list finishedVehicles của RCCP_SceneManager
+                if (RCCP_SceneManager.Instance != null && car.carController != null)
+                {
+                    RCCP_SceneManager.Instance.RegisterFinishedVehicle(car.carController);
+                }
+            }
+            if (car.controllerType == ControllerType.AI && car.aiController != null)
+            {
+                int targetStopWp = Mathf.Min(stopAtWaypointAfterFinish, wpCount > 0 ? wpCount - 1 : stopAtWaypointAfterFinish);
+
+                if (car.aiController.navigationMode != RCCP_AI.NavigationMode.Off && currentWpIdx >= targetStopWp)
+                {
+                    // Debug.Log($"[RaceProgressTracker] 🛑 CarAI '{car.name}' đã hoàn thành cuộc đua và đạt waypoint {currentWpIdx}/{targetStopWp}. Tiến hành DỪNG XE!");
+                    car.aiController.navigationMode = RCCP_AI.NavigationMode.Off;
+                    car.aiController.throttleInput = 0f;
+                    car.aiController.brakeInput = 0f;
+                    car.aiController.handbrakeInput = 1f;
+                    car.aiController.steerInput = 0f;
+                }
+                else if (car.aiController.navigationMode == RCCP_AI.NavigationMode.Off)
+                {
+                    // Giữ xe AI dừng hẳn
+                    car.aiController.throttleInput = 0f;
+                    car.aiController.brakeInput = 0f;
+                    car.aiController.handbrakeInput = 1f;
+                    car.aiController.steerInput = 0f;
+                }
+            }
+        }
     }
 
     public int TotalParticipants => rankings.Count;

@@ -64,17 +64,18 @@ public enum GameState
 
 public enum CarColorType
 {
-    Red,
-    Orange,
-    Yellow,
-    Green,
-    Cyan,
-    Blue,
-    Purple,
-    Magenta,
-    White,
-    Black,
-    Gray
+    Default = 0,
+    Red = 1,
+    Orange = 2,
+    Yellow = 3,
+    Green = 4,
+    Cyan = 5,
+    Blue = 6,
+    Purple = 7,
+    Magenta = 8,
+    White = 9,
+    Black = 10,
+    Gray = 11
 }
 
 

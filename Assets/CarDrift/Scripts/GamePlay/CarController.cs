@@ -58,36 +58,12 @@ public class CarController : MonoBehaviour
 
     public TextMeshPro SpawnedIndexRaceText => spawnedIndexRaceText;
     public bool IsMenuModel => isMenuModel || controllerType == ControllerType.Menu;
-
-    // private void Awake()
-    // {
-    //     FetchReferences();
-    // }
-
-    // private async void Start()
-    // {
-    //     if (autoLoadOnStart)
-    //     {
-    //         await LoadCarModelAsync(carType);
-    //     }
-    //     else
-    //     {
-    //         FetchReferences();
-    //         ApplyControlState();
-    //     }
-    // }
-
-    // private void OnEnable()
-    // {
-    //     ApplyControlState();
-    //     if (useCustomColor)
-    //     {
-    //         ApplyCarColor();
-    //     }
-    // }
-
-    public Color GetCurrentColor()
+    public Color? GetCurrentColor()
     {
+
+        if (carColorType == CarColorType.Default)
+            return null;
+
         if (colorParamSO != null)
         {
             return colorParamSO.GetColor(carColorType);
@@ -98,14 +74,21 @@ public class CarController : MonoBehaviour
         }
         return Color.white;
     }
-
     [Button]
     public void ApplyCarColor()
     {
+        if (carColorType == CarColorType.Default)
+        {
+            carController?.Customizer.PaintManager?.Restore();
+            return;
+        }
+
         if (carController == null)
             FetchReferences();
 
-        Color targetColor = GetCurrentColor();
+        Color? targetColor = GetCurrentColor();
+        if (targetColor == null)
+            return;
 
         if (carController != null && carController.Customizer != null && carController.Customizer.PaintManager != null)
         {
@@ -114,7 +97,7 @@ public class CarController : MonoBehaviour
             {
                 paintManager.GetAllPainters();
             }
-            paintManager.Paint(targetColor);
+            paintManager.Paint(targetColor.Value);
         }
         else
         {
@@ -125,7 +108,7 @@ public class CarController : MonoBehaviour
     public void SetCarColor(CarColorType newColorType)
     {
         carColorType = newColorType;
-        useCustomColor = true;
+        useCustomColor = newColorType != CarColorType.Default;
         ApplyCarColor();
     }
     private void OnDestroy()
@@ -162,11 +145,10 @@ public class CarController : MonoBehaviour
             FetchReferences();
             ApplyDamageSettings();
             ApplyControlState();
-
-            if (useCustomColor)
-            {
-                ApplyCarColor();
-            }
+            // if (useCustomColor)
+            // {
+            //     ApplyCarColor();
+            // }
         }
         catch (System.Exception ex)
         {

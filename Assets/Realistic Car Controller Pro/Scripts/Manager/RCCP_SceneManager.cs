@@ -64,6 +64,17 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager>
     /// </summary>
     public List<RCCP_CarController> allVehicles = new List<RCCP_CarController>();
 
+    public List<RCCP_CarController> finishedVehicles = new List<RCCP_CarController>();
+    public bool RegisterFinishedVehicle(RCCP_CarController vehicle)
+    {
+        if (vehicle != null && !finishedVehicles.Contains(vehicle))
+        {
+            finishedVehicles.Add(vehicle);
+            return true;
+        }
+        return false;
+    }
+
     /// <summary>
     /// All terrains on the scene.
     /// </summary>
@@ -247,6 +258,8 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager>
 
         if (allVehicles.Contains(RCCP))
             allVehicles.Remove(RCCP);
+        if (finishedVehicles.Contains(RCCP))
+            finishedVehicles.Remove(RCCP);
 
     }
 
@@ -259,6 +272,8 @@ public class RCCP_SceneManager : RCCP_Singleton<RCCP_SceneManager>
 
         if (allVehicles.Contains(AI))
             allVehicles.Remove(AI);
+        if (finishedVehicles.Contains(AI))
+            finishedVehicles.Remove(AI);
 
     }
 
