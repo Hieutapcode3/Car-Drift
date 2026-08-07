@@ -77,5 +77,9 @@ public enum CarColorType
     Black = 10,
     Gray = 11
 }
-
-
+public enum EnvironmentType
+{
+    Sun,
+    Night,
+    Rain
+}
