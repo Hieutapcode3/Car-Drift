@@ -1,4 +1,4 @@
-﻿//----------------------------------------------
+//----------------------------------------------
 //        Realistic Car Controller Pro
 //
 // Copyright © 2014 - 2025 BoneCracker Games
@@ -31,7 +31,7 @@ public class RCCP_GetBounds {
 
         foreach (Renderer r in renderers) {
 
-            if (!((r is TrailRenderer) || (r is ParticleSystemRenderer))) {
+            if (!((r is TrailRenderer) || (r is ParticleSystemRenderer) || (r is SpriteRenderer) || r.GetComponent<MiniMapIcon>() != null)) {
 
                 if (!initBounds) {
 
@@ -71,7 +71,7 @@ public class RCCP_GetBounds {
 
         foreach (Renderer r in renderers) {
 
-            if (!((r is TrailRenderer) || (r is ParticleSystemRenderer))) {
+            if (!((r is TrailRenderer) || (r is ParticleSystemRenderer) || (r is SpriteRenderer) || r.GetComponent<MiniMapIcon>() != null)) {
 
                 if (!initBounds) {
 

@@ -14856,7 +14856,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4451761222409973653}
   - component: {fileID: 4671581212014997554}
-  m_Layer: 6
+  m_Layer: 8
   m_Name: CarController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -14905,6 +14905,7 @@ MonoBehaviour:
   rotationAxis: {x: 0, y: 1, z: 0}
   freezePhysicsInMenu: 1
   indexRacePref: {fileID: 4074159594652143259, guid: 069063be49b75b04ab8a1c5641417b04, type: 3}
+  miniMapIconPref: {fileID: 5057753551634162959, guid: c9f67045579d5194cb907f1d18ebc653, type: 3}
   carController: {fileID: 4032309566052263449}
   aiController: {fileID: 0}
   damageController: {fileID: 0}

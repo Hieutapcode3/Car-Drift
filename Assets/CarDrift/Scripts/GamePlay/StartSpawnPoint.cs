@@ -48,7 +48,6 @@ public class StartSpawnPoint : MonoBehaviour
     {
         ClearSpawnedVehicles();
 
-        CarController playerCar = null;
         bool originalRegister = false;
         if (RCCP_SceneManager.Instance != null)
         {
@@ -60,35 +59,29 @@ public class StartSpawnPoint : MonoBehaviour
         {
             if (playerSpawnTransform != null)
             {
-                playerCar = CreateVehicleGameObject("Player_Car", playerSpawnTransform);
-                playerCar.autoLoadOnStart = false;
-                playerCar.isDamageable = false;
-                playerCar.controllerType = ControllerType.Player;
-                playerCar.carType = playerCarType;
-                playerCar.randomColorForAI = false;
-                playerCar.useCustomColor = false;
-
-                await playerCar.LoadCarModelAsync(playerCarType);
+                CarController playerCar = CreateVehicleGameObject("Player_Car", playerSpawnTransform);
+                ConfigureCar(playerCar, ControllerType.Player, playerCarType, AIDifficulty.Medium, false);
                 spawnedCars.Add(playerCar);
             }
             else
             {
                 Debug.LogWarning("[StartSpawnPoint] Chưa gán PlayerSpawnTransform!");
             }
+
             for (int i = 0; i < enemySpawnConfigs.Count; i++)
             {
                 var config = enemySpawnConfigs[i];
                 if (config.spawnTransform == null) continue;
 
                 CarController enemyCar = CreateVehicleGameObject($"Enemy_Car_{i + 1}_{config.carType}", config.spawnTransform);
-                enemyCar.autoLoadOnStart = false;
-                enemyCar.isDamageable = false;
-                enemyCar.controllerType = ControllerType.AI;
-                enemyCar.carType = config.carType;
-                enemyCar.aiDifficulty = config.aiDifficulty;
-
-                await enemyCar.LoadCarModelAsync(config.carType);
+                ConfigureCar(enemyCar, ControllerType.AI, config.carType, config.aiDifficulty, true);
                 spawnedCars.Add(enemyCar);
+            }
+            for (int i = 0; i < spawnedCars.Count; i++)
+            {
+                CarController car = spawnedCars[i];
+                await car.LoadCarModelAsync(car.carType);
+                await Task.Delay(2000);
             }
         }
         finally
@@ -96,15 +89,32 @@ public class StartSpawnPoint : MonoBehaviour
             if (RCCP_SceneManager.Instance != null)
                 RCCP_SceneManager.Instance.registerLastVehicleAsPlayer = originalRegister;
         }
-        if (playerCar != null && playerCar.carController != null)
+        var player = spawnedCars.Find(c => c.controllerType == ControllerType.Player);
+        if (player != null && player.carController != null && RCCP_SceneManager.Instance != null)
         {
-            if (RCCP_SceneManager.Instance != null)
-            {
-                RCCP_SceneManager.Instance.RegisterPlayer(playerCar.carController, true);
-            }
+            bool isPlaying = GameManager.Instance != null && GameManager.Instance.GameState == GameState.Playing;
+            RCCP_SceneManager.Instance.RegisterPlayer(player.carController, isPlaying);
         }
     }
 
+    private void ConfigureCar(CarController car, ControllerType type, CarType cType, AIDifficulty diff, bool isAI)
+    {
+        car.autoLoadOnStart = false;
+        car.isDamageable = false;
+        car.controllerType = type;
+        car.carType = cType;
+
+        if (isAI)
+        {
+            car.aiDifficulty = diff;
+            car.randomColorForAI = true;
+        }
+        else
+        {
+            car.randomColorForAI = false;
+            car.useCustomColor = false;
+        }
+    }
 
     private CarController CreateVehicleGameObject(string name, Transform spawnTransform)
     {
@@ -148,148 +158,93 @@ public class StartSpawnPoint : MonoBehaviour
 
     public void GenerateSpawnPointsInEditor()
     {
-        if (playerSpawnTransform == null)
-        {
-            Transform existingPlayer = transform.Find("PlayerSpawn");
-            if (existingPlayer != null)
-            {
-                playerSpawnTransform = existingPlayer;
-            }
-            else
-            {
-                GameObject playerObj = new GameObject("PlayerSpawn");
-                playerObj.transform.SetParent(transform);
-                playerObj.transform.localPosition = Vector3.zero;
-                playerObj.transform.localRotation = Quaternion.identity;
-                playerSpawnTransform = playerObj.transform;
-            }
-        }
-        // 2. Enemy Start Position Anchor
         if (enemyStartPos == null)
         {
-            Transform existingStart = transform.Find("EnemyStartPos");
-            if (existingStart != null)
-            {
-                enemyStartPos = existingStart;
-            }
-            else
-            {
-                GameObject startObj = new GameObject("EnemyStartPos");
-                startObj.transform.SetParent(transform);
-                startObj.transform.localPosition = new Vector3(3f, 0f, 0f);
-                startObj.transform.localRotation = Quaternion.identity;
-                enemyStartPos = startObj.transform;
-            }
+            Debug.LogError("[StartSpawnPoint] Cần gán EnemyStartPos làm vị trí gốc để tạo lưới xuất phát!");
+            return;
         }
 
-        Transform enemyGroup = transform.Find("EnemySpawns");
-        if (enemyGroup == null)
+        enemySpawnConfigs.Clear();
+
+        Transform parentObj = transform.Find("EnemySpawnPoints");
+        if (parentObj != null)
         {
-            GameObject groupObj = new GameObject("EnemySpawns");
-            groupObj.transform.SetParent(transform);
-            groupObj.transform.localPosition = Vector3.zero;
-            groupObj.transform.localRotation = Quaternion.identity;
-            enemyGroup = groupObj.transform;
+            DestroyImmediate(parentObj.gameObject);
         }
 
-        while (enemySpawnConfigs.Count < enemyCount)
+        GameObject newParent = new GameObject("EnemySpawnPoints");
+        newParent.transform.SetParent(transform, false);
+
+        Vector3 startPos = enemyStartPos.position;
+        Quaternion startRot = enemyStartPos.rotation;
+        Vector3 forwardDir = enemyStartPos.forward;
+        Vector3 rightDir = enemyStartPos.right;
+
+        int sideMultiplier = startRight ? 1 : -1;
+
+        for (int i = 0; i < enemyCount; i++)
         {
-            int index = enemySpawnConfigs.Count + 1;
-            enemySpawnConfigs.Add(new EnemySpawnConfig
+            int row = i / 2;
+            int col = i % 2;
+
+            int currentSideMultiplier = (col == 0) ? sideMultiplier : -sideMultiplier;
+
+            Vector3 spawnPos = startPos
+                - (forwardDir * (row * backDistance))
+                + (rightDir * (currentSideMultiplier * (sideOffset / 2f)));
+
+            GameObject spObj = new GameObject($"SpawnPoint_Enemy_{i + 1}");
+            spObj.transform.position = spawnPos;
+            spObj.transform.rotation = startRot;
+            spObj.transform.SetParent(newParent.transform, true);
+
+            EnemySpawnConfig config = new EnemySpawnConfig
             {
-                name = $"Enemy Spawn {index}",
-                carType = (CarType)(index % System.Enum.GetValues(typeof(CarType)).Length),
-                aiDifficulty = AIDifficulty.Medium
-            });
+                name = $"Enemy {i + 1}",
+                carType = (CarType)(i % System.Enum.GetValues(typeof(CarType)).Length),
+                aiDifficulty = AIDifficulty.Medium,
+                spawnTransform = spObj.transform
+            };
+
+            enemySpawnConfigs.Add(config);
         }
 
-        if (enemySpawnConfigs.Count > enemyCount)
-        {
-            enemySpawnConfigs.RemoveRange(enemyCount, enemySpawnConfigs.Count - enemyCount);
-        }
-
-        if (enemyCount == 0) return;
-
-        // Lấy vị trí và hướng xoay mốc từ enemyStartPos
-        Vector3 anchorPos = enemyStartPos.position;
-        Quaternion anchorRot = enemyStartPos.rotation;
-
-        // Sinh và tự động xếp vị trí cho tất cả các điểm spawn (EnemySpawn_1 -> EnemySpawn_N)
-        for (int i = 0; i < enemySpawnConfigs.Count; i++)
-        {
-            string childName = $"EnemySpawn_{i + 1}";
-            Transform child = enemyGroup.Find(childName);
-            if (child == null)
-            {
-                GameObject childObj = new GameObject(childName);
-                childObj.transform.SetParent(enemyGroup);
-                child = childObj.transform;
-            }
-
-            // Xe 1 (i = 0): Đặt đúng vị trí enemyStartPos
-            // Xe 2 (i = 1): Lùi 1 * backDistance, lệch Right (+) nếu startRight = true
-            // Xe 3 (i = 2): Lùi 2 * backDistance, lệch Left (-)
-            float sideSign = (i == 0) ? 0f : ((i % 2 != 0) ? (startRight ? 1f : -1f) : (startRight ? -1f : 1f));
-            Vector3 targetPos = anchorPos - (anchorRot * Vector3.forward * (i * backDistance)) + (anchorRot * Vector3.right * (sideSign * sideOffset));
-
-            child.position = targetPos;
-            child.rotation = anchorRot;
-
-            enemySpawnConfigs[i].name = $"Enemy Spawn {i + 1} ({enemySpawnConfigs[i].carType})";
-            enemySpawnConfigs[i].spawnTransform = child;
-        }
+        Debug.Log($"[StartSpawnPoint] ✅ Đã tạo thành công {enemyCount} Spawn Point chuẩn Racing Grid!");
     }
 
     public void ClearSpawnPointsInEditor()
     {
-        playerSpawnTransform = null;
-        enemyStartPos = null;
         enemySpawnConfigs.Clear();
 
-        for (int i = transform.childCount - 1; i >= 0; i--)
+        Transform parentObj = transform.Find("EnemySpawnPoints");
+        if (parentObj != null)
         {
-            DestroyImmediate(transform.GetChild(i).gameObject);
+            DestroyImmediate(parentObj.gameObject);
         }
+
+        Debug.Log("[StartSpawnPoint] 🗑️ Đã xóa toàn bộ điểm Spawn trong Editor!");
     }
-
-#if UNITY_EDITOR
-    private void OnValidate()
-    {
-        if (!Application.isPlaying && enemySpawnConfigs != null && enemySpawnConfigs.Count > 0)
-        {
-            GenerateSpawnPointsInEditor();
-        }
-    }
-#endif
-
-    #endregion
-
-    #region Gizmos Draw
 
     private void OnDrawGizmos()
     {
         if (playerSpawnTransform != null)
         {
-            Gizmos.color = Color.cyan;
-            Gizmos.DrawWireCube(playerSpawnTransform.position + Vector3.up * 0.75f, new Vector3(2f, 1.5f, 4f));
-            Gizmos.DrawRay(playerSpawnTransform.position + Vector3.up * 0.75f, playerSpawnTransform.forward * 3f);
+            Gizmos.color = Color.green;
+            Gizmos.DrawWireCube(playerSpawnTransform.position + Vector3.up * 1f, new Vector3(2f, 1.5f, 4.5f));
+            Gizmos.DrawRay(playerSpawnTransform.position + Vector3.up * 1f, playerSpawnTransform.forward * 3f);
         }
 
-        if (enemyStartPos != null)
+        if (enemySpawnConfigs != null)
         {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawWireSphere(enemyStartPos.position + Vector3.up * 0.75f, 0.5f);
-            Gizmos.DrawRay(enemyStartPos.position + Vector3.up * 0.75f, enemyStartPos.forward * 4f);
-        }
-
-        for (int i = 0; i < enemySpawnConfigs.Count; i++)
-        {
-            var config = enemySpawnConfigs[i];
-            if (config.spawnTransform != null)
+            for (int i = 0; i < enemySpawnConfigs.Count; i++)
             {
-                Gizmos.color = Color.red;
-                Gizmos.DrawWireCube(config.spawnTransform.position + Vector3.up * 0.75f, new Vector3(2f, 1.5f, 4f));
-                Gizmos.DrawRay(config.spawnTransform.position + Vector3.up * 0.75f, config.spawnTransform.forward * 3f);
+                var cfg = enemySpawnConfigs[i];
+                if (cfg != null && cfg.spawnTransform != null)
+                {
+                    Gizmos.color = Color.red;
+                    Gizmos.DrawWireCube(cfg.spawnTransform.position + Vector3.up * 1f, new Vector3(2f, 1.5f, 4.5f));
+                    Gizmos.DrawRay(cfg.spawnTransform.position + Vector3.up * 1f, cfg.spawnTransform.forward * 2.5f);
+                }
             }
         }
     }

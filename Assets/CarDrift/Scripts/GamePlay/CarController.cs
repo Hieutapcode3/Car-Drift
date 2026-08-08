@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using System.Collections.Generic;
 
 public class CarController : MonoBehaviour
 {
@@ -26,38 +27,86 @@ public class CarController : MonoBehaviour
     public CarColorType carColorType = CarColorType.Red;
     public bool useCustomColor = false;
     public bool randomColorForAI = true;
-
-    [Button]
-    public void SetRandomColor()
-    {
-        if (controllerType != ControllerType.AI)
-            return;
-
-        System.Array values = System.Enum.GetValues(typeof(CarColorType));
-        if (values.Length > 0)
-        {
-            CarColorType randomColor = (CarColorType)values.GetValue(UnityEngine.Random.Range(0, values.Length));
-            SetCarColor(randomColor);
-        }
-    }
-
     [Header("Menu Rotation Settings")]
     public float rotationSpeed = 30f;
     public Vector3 rotationAxis = Vector3.up;
     public bool freezePhysicsInMenu = true;
-
     [Header("References")]
     [SerializeField] private TextMeshPro indexRacePref;
+    [SerializeField] private MiniMapIcon miniMapIconPref;
     public RCCP_CarController carController;
     public RCCP_AI aiController;
     public RCCP_Damage damageController;
 
+    [Header("Race Tracking Debug")]
+    [ReadOnly] public int indexTargetPoint = 1;
+    [ReadOnly] public int totalWaypointsPassed = 0;
+    [ReadOnly] public int currentLapCount = 1;
+
     private TextMeshPro spawnedIndexRaceText;
+    private MiniMapIcon spawnedMiniMapIcon;
     private GameObject currentCarInstance;
     private AsyncOperationHandle<GameObject> loadHandle;
-
     public TextMeshPro SpawnedIndexRaceText => spawnedIndexRaceText;
     public bool IsMenuModel => isMenuModel || controllerType == ControllerType.Menu;
+
+    #region Race Status Properties
+    public int CurrentWaypointIndex
+    {
+        get
+        {
+            if (controllerType == ControllerType.AI && aiController != null)
+                return aiController.currentWaypointIndex;
+
+            if (RaceProgressTracker.Instance != null)
+                return RaceProgressTracker.Instance.GetTargetWaypointIndex(this);
+
+            return 0;
+        }
+    }
+
+    public int CurrentLap
+    {
+        get
+        {
+            if (controllerType == ControllerType.AI && aiController != null)
+                return aiController.lap + 1;
+
+            if (RaceProgressTracker.Instance != null)
+                return RaceProgressTracker.Instance.GetPlayerLap(this) + 1;
+
+            return 1;
+        }
+    }
+
+    public RCCP_Waypoint NextWaypoint
+    {
+        get
+        {
+            if (RaceProgressTracker.Instance != null && RaceProgressTracker.Instance.waypointsContainer != null)
+            {
+                var waypoints = RaceProgressTracker.Instance.waypointsContainer.waypoints;
+                if (waypoints != null && waypoints.Count > 0)
+                {
+                    int idx = CurrentWaypointIndex % waypoints.Count;
+                    return waypoints[idx];
+                }
+            }
+            return null;
+        }
+    }
+
+    public int CurrentRank
+    {
+        get
+        {
+            if (RaceProgressTracker.Instance != null)
+                return RaceProgressTracker.Instance.GetRank(this);
+
+            return 0;
+        }
+    }
+    #endregion
     public Color? GetCurrentColor()
     {
 
@@ -104,13 +153,52 @@ public class CarController : MonoBehaviour
             Debug.LogWarning($"[CarController] Không thể đổi màu xe '{gameObject.name}'. Thiếu RCCP_Customizer hoặc PaintManager!");
         }
     }
+    [Button]
+    public void SetRandomColor()
+    {
+        if (controllerType != ControllerType.AI)
+            return;
 
+        System.Array values = System.Enum.GetValues(typeof(CarColorType));
+        if (values.Length > 0)
+        {
+            CarColorType randomColor = (CarColorType)values.GetValue(UnityEngine.Random.Range(0, values.Length));
+            SetCarColor(randomColor);
+        }
+    }
     public void SetCarColor(CarColorType newColorType)
     {
         carColorType = newColorType;
         useCustomColor = newColorType != CarColorType.Default;
         ApplyCarColor();
     }
+    private void OnEnable()
+    {
+        GameManager.OnGameStateChanged += OnGameStateChanged;
+    }
+
+    private void OnDisable()
+    {
+        GameManager.OnGameStateChanged -= OnGameStateChanged;
+    }
+
+    private void Start()
+    {
+        if (autoLoadOnStart && currentCarInstance == null)
+        {
+            _ = LoadCarModelAsync(carType);
+        }
+        else
+        {
+            ApplyControlState();
+        }
+    }
+
+    private void OnGameStateChanged(GameState state)
+    {
+        ApplyControlState();
+    }
+
     private void OnDestroy()
     {
         UnloadCurrentCar();
@@ -126,7 +214,7 @@ public class CarController : MonoBehaviour
         carType = newCarType;
         string addressKey = carType.ToString();
 
-        Debug.Log($"[CarController] Đang tiến hành load model xe với Address Key: '{addressKey}'...");
+        // Debug.Log($"[CarController] Đang tiến hành load model xe với Address Key: '{addressKey}'...");
         UnloadCurrentCar();
         try
         {
@@ -141,7 +229,7 @@ public class CarController : MonoBehaviour
             currentCarInstance.transform.localPosition = Vector3.zero;
             currentCarInstance.transform.localRotation = Quaternion.identity;
             currentCarInstance.transform.localScale = Vector3.one;
-            Debug.Log($"[CarController] ✅ Load THÀNH CÔNG model xe: '{addressKey}'!");
+            // Debug.Log($"[CarController] ✅ Load THÀNH CÔNG model xe: '{addressKey}'!");
             FetchReferences();
             ApplyDamageSettings();
             ApplyControlState();
@@ -171,6 +259,12 @@ public class CarController : MonoBehaviour
             spawnedIndexRaceText = null;
         }
 
+        if (spawnedMiniMapIcon != null)
+        {
+            Destroy(spawnedMiniMapIcon.gameObject);
+            spawnedMiniMapIcon = null;
+        }
+
         if (currentCarInstance != null)
         {
             if (loadHandle.IsValid())
@@ -190,6 +284,10 @@ public class CarController : MonoBehaviour
                 Destroy(child.gameObject);
             }
         }
+
+        cachedRigidbodies = null;
+        savedVelocities.Clear();
+        isPhysicsFrozen = false;
     }
 
     public void FetchReferences()
@@ -245,9 +343,17 @@ public class CarController : MonoBehaviour
             damageController = GetComponentInChildren<RCCP_Damage>(true);
         }
 
+        isPhysicsFrozen = false;
+        CacheRigidbodies();
+
         if (indexRacePref != null && !IsMenuModel && controllerType == ControllerType.AI)
         {
             SpawnIndexRaceText();
+        }
+
+        if (miniMapIconPref != null && !IsMenuModel)
+        {
+            SpawnMiniMapIcon();
         }
     }
     public void SpawnIndexRaceText()
@@ -281,6 +387,38 @@ public class CarController : MonoBehaviour
                 spawnedIndexRaceText.transform.localPosition = new Vector3(0f, 2.5f, 0f);
             }
         }
+    }
+
+    public void SpawnMiniMapIcon()
+    {
+        if (miniMapIconPref == null || IsMenuModel)
+            return;
+
+        Transform targetParent = null;
+        if (carController != null)
+            targetParent = carController.transform;
+        else if (currentCarInstance != null)
+            targetParent = currentCarInstance.transform;
+        else
+            targetParent = transform;
+
+        if (spawnedMiniMapIcon == null)
+        {
+            spawnedMiniMapIcon = Instantiate(miniMapIconPref, targetParent);
+            spawnedMiniMapIcon.transform.localPosition = new Vector3(0f, -200f, 0f);
+            spawnedMiniMapIcon.transform.localRotation = Quaternion.Euler(90, 0, 0);
+        }
+        else
+        {
+            if (spawnedMiniMapIcon.transform.parent != targetParent)
+            {
+                spawnedMiniMapIcon.transform.SetParent(targetParent, false);
+                spawnedMiniMapIcon.transform.localPosition = new Vector3(0f, -200f, 0f);
+            }
+        }
+
+        bool isPlayer = controllerType == ControllerType.Player;
+        spawnedMiniMapIcon.Init(isPlayer);
     }
     public void UpdateRaceRank(int rank)
     {
@@ -420,17 +558,31 @@ public class CarController : MonoBehaviour
             {
                 aiController.enabled = false;
             }
+            return;
         }
-        else if (controllerType == ControllerType.AI)
+        bool isPlaying = GameManager.Instance == null || GameManager.Instance.GameState == GameState.Playing;
+        bool isFinished = GameManager.Instance != null && (GameManager.Instance.GameState == GameState.Win || GameManager.Instance.GameState == GameState.Lose);
+        bool isAIActive = isPlaying || isFinished;
+
+        if (controllerType == ControllerType.AI)
         {
             GetOrCreateAIController();
             if (aiController != null)
             {
-                aiController.enabled = true;
-                ApplyAIDifficulty(aiDifficulty);
+                aiController.enabled = isAIActive;
+                if (isPlaying)
+                {
+                    ApplyAIDifficulty(aiDifficulty);
+                }
             }
 
-            if (randomColorForAI)
+            if (carController != null)
+            {
+                carController.externalControl = true; // AI luôn dùng externalControl
+                carController.SetCanControl(isAIActive);
+            }
+
+            if (randomColorForAI && isPlaying)
             {
                 SetRandomColor();
             }
@@ -439,19 +591,36 @@ public class CarController : MonoBehaviour
         {
             if (aiController != null)
             {
-                aiController.enabled = false;
+                aiController.enabled = isFinished;
+                if (isFinished)
+                {
+                    aiController.navigationMode = RCCP_AI.NavigationMode.FollowWaypoints;
+                    if (RaceProgressTracker.Instance != null && RaceProgressTracker.Instance.waypointsContainer != null)
+                    {
+                        aiController.waypointsContainer = RaceProgressTracker.Instance.waypointsContainer;
+                        aiController.currentWaypointIndex = indexTargetPoint; // Quan trọng: Gán điểm đến tiếp theo để AI không quay đầu
+                    }
+                }
             }
 
             if (carController != null)
             {
-                carController.SetCanControl(true);
+                carController.externalControl = !isPlaying;
+                carController.SetCanControl(isAIActive);
 
                 if (RCCP_SceneManager.Instance != null)
                 {
-                    RCCP_SceneManager.Instance.RegisterPlayer(carController, true);
+                    RCCP_SceneManager.Instance.RegisterPlayer(carController, isAIActive);
+                    Debug.Log("Can controller: " + isPlaying);
+                    if (GameManager.Instance != null)
+                    {
+                        GameManager.Instance.SetMiniMapFollowPlayer();
+                    }
                 }
             }
         }
+
+        FreezePhysics(!(isPlaying || isFinished));
     }
 
     public void ApplyAIDifficulty(AIDifficulty difficulty)
@@ -488,11 +657,68 @@ public class CarController : MonoBehaviour
         }
     }
 
+    private struct PhysicsState
+    {
+        public Vector3 velocity;
+        public Vector3 angularVelocity;
+    }
+
+    private Rigidbody[] cachedRigidbodies;
+    private readonly Dictionary<Rigidbody, PhysicsState> savedVelocities = new Dictionary<Rigidbody, PhysicsState>();
+    private bool isPhysicsFrozen;
+
+    public void CacheRigidbodies()
+    {
+        cachedRigidbodies = GetComponentsInChildren<Rigidbody>(true);
+    }
+
+    public void FreezePhysics(bool freeze)
+    {
+        if (isPhysicsFrozen == freeze) return;
+        isPhysicsFrozen = freeze;
+
+        if (cachedRigidbodies == null || cachedRigidbodies.Length == 0)
+            CacheRigidbodies();
+
+        if (freeze)
+        {
+            for (int i = 0; i < cachedRigidbodies.Length; i++)
+            {
+                var rb = cachedRigidbodies[i];
+                if (rb == null) continue;
+                if (!rb.isKinematic && !savedVelocities.ContainsKey(rb))
+                {
+                    savedVelocities[rb] = new PhysicsState { velocity = rb.linearVelocity, angularVelocity = rb.angularVelocity };
+                }
+                rb.isKinematic = true;
+            }
+        }
+        else
+        {
+            for (int i = 0; i < cachedRigidbodies.Length; i++)
+            {
+                var rb = cachedRigidbodies[i];
+                if (rb == null) continue;
+                rb.isKinematic = false;
+                if (savedVelocities.TryGetValue(rb, out var saved))
+                {
+                    rb.linearVelocity = saved.velocity;
+                    rb.angularVelocity = saved.angularVelocity;
+                }
+            }
+            savedVelocities.Clear();
+        }
+    }
+
     public void SetKinematicAllParts(bool kinematic)
     {
-        Rigidbody[] allRigidbodies = GetComponentsInChildren<Rigidbody>(true);
-        foreach (Rigidbody rb in allRigidbodies)
+        if (cachedRigidbodies == null || cachedRigidbodies.Length == 0)
+            CacheRigidbodies();
+
+        for (int i = 0; i < cachedRigidbodies.Length; i++)
         {
+            var rb = cachedRigidbodies[i];
+            if (rb == null) continue;
             rb.isKinematic = kinematic;
             if (kinematic)
             {

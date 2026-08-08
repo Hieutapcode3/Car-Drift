@@ -1,7 +1,7 @@
 //----------------------------------------------
 //        Realistic Car Controller Pro
 //
-// Copyright © 2014 - 2025 BoneCracker Games
+// Copyright ï¿½ 2014 - 2025 BoneCracker Games
 // https://www.bonecrackergames.com
 // Ekrem Bugra Ozdoganlar
 //
@@ -16,7 +16,8 @@ using UnityEditor.Events;
 using UnityEngine.Events;
 
 [CustomEditor(typeof(RCCP_OtherAddons))]
-public class RCCP_OtherAddonsEditor : Editor {
+public class RCCP_OtherAddonsEditor : Editor
+{
 
     RCCP_OtherAddons prop;
     GUISkin skin;
@@ -34,7 +35,8 @@ public class RCCP_OtherAddonsEditor : Editor {
     RCCP_FuelTank fuelTank;
     RCCP_BodyTilt bodyTilt;
 
-    private void OnEnable() {
+    private void OnEnable()
+    {
 
         skin = Resources.Load<GUISkin>("RCCP_Gui");
 
@@ -43,81 +45,93 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void ReOrderComponents() {
+    private void ReOrderComponents()
+    {
 
         int index = 0;
 
-        if (nos) {
+        if (nos)
+        {
 
             nos.transform.SetSiblingIndex(index);
             index++;
 
         }
 
-        if (dashboard) {
+        if (dashboard)
+        {
 
             dashboard.transform.SetSiblingIndex(index);
             index++;
 
         }
 
-        if (cameras) {
+        if (cameras)
+        {
 
             cameras.transform.SetSiblingIndex(index);
             index++;
 
         }
 
-        if (exhausts) {
+        if (exhausts)
+        {
 
             exhausts.transform.SetSiblingIndex(index);
             index++;
 
         }
 
-        if (AI) {
+        if (AI)
+        {
 
             AI.transform.SetSiblingIndex(index);
             index++;
 
         }
 
-        if (recorder) {
+        if (recorder)
+        {
 
             recorder.transform.SetSiblingIndex(index);
             index++;
 
         }
 
-        if (trailAttacher) {
+        if (trailAttacher)
+        {
 
             trailAttacher.transform.SetSiblingIndex(index);
             index++;
 
         }
 
-        if (limiter) {
+        if (limiter)
+        {
 
             limiter.transform.SetSiblingIndex(index);
             index++;
 
         }
 
-        if (wheelBlur) {
+        if (wheelBlur)
+        {
 
             wheelBlur.transform.SetSiblingIndex(index);
             index++;
 
         }
 
-        if (fuelTank) {
+        if (fuelTank)
+        {
 
             fuelTank.transform.SetSiblingIndex(index);
             index++;
 
         }
 
-        if (bodyTilt) {
+        if (bodyTilt)
+        {
 
             bodyTilt.transform.SetSiblingIndex(index);
             index++;
@@ -126,7 +140,8 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void GetAllComponents() {
+    private void GetAllComponents()
+    {
 
         nos = prop.GetComponentInChildren<RCCP_Nos>(true);
         dashboard = prop.GetComponentInChildren<RCCP_Visual_Dashboard>(true);
@@ -142,7 +157,8 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    public override void OnInspectorGUI() {
+    public override void OnInspectorGUI()
+    {
 
         prop = (RCCP_OtherAddons)target;
         serializedObject.Update();
@@ -200,7 +216,8 @@ public class RCCP_OtherAddonsEditor : Editor {
         EditorGUILayout.BeginVertical(GUI.skin.box);
         EditorGUILayout.EndVertical();
 
-        if (!EditorUtility.IsPersistent(prop)) {
+        if (!EditorUtility.IsPersistent(prop))
+        {
 
             EditorGUILayout.BeginVertical(GUI.skin.box);
 
@@ -224,14 +241,16 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void NOSButton() {
+    private void NOSButton()
+    {
 
         EditorGUILayout.BeginVertical(GUI.skin.window);
 
         if (nos)
             nos.enabled = EditorGUILayout.ToggleLeft("", nos.enabled, GUILayout.Width(15f));
 
-        if (GUILayout.Button("NOS", GUILayout.Width(50f), GUILayout.Height(20f), GUILayout.ExpandWidth(true))) {
+        if (GUILayout.Button("NOS", GUILayout.Width(50f), GUILayout.Height(20f), GUILayout.ExpandWidth(true)))
+        {
 
             if (nos)
                 Selection.activeGameObject = nos.gameObject;
@@ -240,14 +259,16 @@ public class RCCP_OtherAddonsEditor : Editor {
 
         }
 
-        if (!EditorUtility.IsPersistent(prop)) {
+        if (!EditorUtility.IsPersistent(prop))
+        {
 
             if (nos)
                 GUILayout.Label(("<color=#FF9500>Equipped</color>"), GUILayout.Width(50f), GUILayout.ExpandWidth(true));
             else
                 GUILayout.Label(("<color=#FF9500>Create</color>"), GUILayout.Width(50f), GUILayout.ExpandWidth(true));
 
-            if (nos) {
+            if (nos)
+            {
 
                 GUI.color = Color.red;
 
@@ -264,14 +285,16 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void InteriorButton() {
+    private void InteriorButton()
+    {
 
         EditorGUILayout.BeginVertical(GUI.skin.window);
 
         if (dashboard)
             dashboard.enabled = EditorGUILayout.ToggleLeft("", dashboard.enabled, GUILayout.Width(15f));
 
-        if (GUILayout.Button("Interior", GUILayout.Width(50f), GUILayout.Height(20f), GUILayout.ExpandWidth(true))) {
+        if (GUILayout.Button("Interior", GUILayout.Width(50f), GUILayout.Height(20f), GUILayout.ExpandWidth(true)))
+        {
 
             if (dashboard)
                 Selection.activeGameObject = dashboard.gameObject;
@@ -280,14 +303,16 @@ public class RCCP_OtherAddonsEditor : Editor {
 
         }
 
-        if (!EditorUtility.IsPersistent(prop)) {
+        if (!EditorUtility.IsPersistent(prop))
+        {
 
             if (dashboard)
                 GUILayout.Label(("<color=#FF9500>Equipped</color>"), GUILayout.Width(50f), GUILayout.ExpandWidth(true));
             else
                 GUILayout.Label(("<color=#FF9500>Create</color>"), GUILayout.Width(50f), GUILayout.ExpandWidth(true));
 
-            if (dashboard) {
+            if (dashboard)
+            {
 
                 GUI.color = Color.red;
 
@@ -304,14 +329,16 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void CamerasButton() {
+    private void CamerasButton()
+    {
 
         EditorGUILayout.BeginVertical(GUI.skin.window);
 
         if (cameras)
             cameras.enabled = EditorGUILayout.ToggleLeft("", cameras.enabled, GUILayout.Width(15f));
 
-        if (GUILayout.Button("Cameras", GUILayout.Width(50f), GUILayout.Height(20f), GUILayout.ExpandWidth(true))) {
+        if (GUILayout.Button("Cameras", GUILayout.Width(50f), GUILayout.Height(20f), GUILayout.ExpandWidth(true)))
+        {
 
             if (cameras)
                 Selection.activeGameObject = cameras.gameObject;
@@ -320,14 +347,16 @@ public class RCCP_OtherAddonsEditor : Editor {
 
         }
 
-        if (!EditorUtility.IsPersistent(prop)) {
+        if (!EditorUtility.IsPersistent(prop))
+        {
 
             if (cameras)
                 GUILayout.Label(("<color=#FF9500>Equipped</color>"), GUILayout.Width(50f), GUILayout.ExpandWidth(true));
             else
                 GUILayout.Label(("<color=#FF9500>Create</color>"), GUILayout.Width(50f), GUILayout.ExpandWidth(true));
 
-            if (cameras) {
+            if (cameras)
+            {
 
                 GUI.color = Color.red;
 
@@ -344,14 +373,16 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void ExhaustsButton() {
+    private void ExhaustsButton()
+    {
 
         EditorGUILayout.BeginVertical(GUI.skin.window);
 
         if (exhausts)
             exhausts.enabled = EditorGUILayout.ToggleLeft("", exhausts.enabled, GUILayout.Width(15f));
 
-        if (GUILayout.Button("Exhausts", GUILayout.Width(50f), GUILayout.Height(20f), GUILayout.ExpandWidth(true))) {
+        if (GUILayout.Button("Exhausts", GUILayout.Width(50f), GUILayout.Height(20f), GUILayout.ExpandWidth(true)))
+        {
 
             if (exhausts)
                 Selection.activeGameObject = exhausts.gameObject;
@@ -360,14 +391,16 @@ public class RCCP_OtherAddonsEditor : Editor {
 
         }
 
-        if (!EditorUtility.IsPersistent(prop)) {
+        if (!EditorUtility.IsPersistent(prop))
+        {
 
             if (exhausts)
                 GUILayout.Label(("<color=#FF9500>Equipped</color>"), GUILayout.Width(50f), GUILayout.ExpandWidth(true));
             else
                 GUILayout.Label(("<color=#FF9500>Create</color>"), GUILayout.Width(50f), GUILayout.ExpandWidth(true));
 
-            if (exhausts) {
+            if (exhausts)
+            {
 
                 GUI.color = Color.red;
 
@@ -384,14 +417,16 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void AIButton() {
+    private void AIButton()
+    {
 
         EditorGUILayout.BeginVertical(GUI.skin.window);
 
         if (AI)
             AI.enabled = EditorGUILayout.ToggleLeft("", AI.enabled, GUILayout.Width(15f));
 
-        if (GUILayout.Button("AI", GUILayout.Width(50f), GUILayout.Height(20f), GUILayout.ExpandWidth(true))) {
+        if (GUILayout.Button("AI", GUILayout.Width(50f), GUILayout.Height(20f), GUILayout.ExpandWidth(true)))
+        {
 
             if (AI)
                 Selection.activeGameObject = AI.gameObject;
@@ -400,14 +435,16 @@ public class RCCP_OtherAddonsEditor : Editor {
 
         }
 
-        if (!EditorUtility.IsPersistent(prop)) {
+        if (!EditorUtility.IsPersistent(prop))
+        {
 
             if (AI)
                 GUILayout.Label(("<color=#FF9500>Equipped</color>"), GUILayout.Width(50f), GUILayout.ExpandWidth(true));
             else
                 GUILayout.Label(("<color=#FF9500>Create</color>"), GUILayout.Width(50f), GUILayout.ExpandWidth(true));
 
-            if (AI) {
+            if (AI)
+            {
 
                 GUI.color = Color.red;
 
@@ -424,14 +461,16 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void RecorderButton() {
+    private void RecorderButton()
+    {
 
         EditorGUILayout.BeginVertical(GUI.skin.window);
 
         if (recorder)
             recorder.enabled = EditorGUILayout.ToggleLeft("", recorder.enabled, GUILayout.Width(15f));
 
-        if (GUILayout.Button("Recorder", GUILayout.Width(50f), GUILayout.Height(20f), GUILayout.ExpandWidth(true))) {
+        if (GUILayout.Button("Recorder", GUILayout.Width(50f), GUILayout.Height(20f), GUILayout.ExpandWidth(true)))
+        {
 
             if (recorder)
                 Selection.activeGameObject = recorder.gameObject;
@@ -440,14 +479,16 @@ public class RCCP_OtherAddonsEditor : Editor {
 
         }
 
-        if (!EditorUtility.IsPersistent(prop)) {
+        if (!EditorUtility.IsPersistent(prop))
+        {
 
             if (recorder)
                 GUILayout.Label(("<color=#FF9500>Equipped</color>"), GUILayout.Width(50f), GUILayout.ExpandWidth(true));
             else
                 GUILayout.Label(("<color=#FF9500>Create</color>"), GUILayout.Width(50f), GUILayout.ExpandWidth(true));
 
-            if (recorder) {
+            if (recorder)
+            {
 
                 GUI.color = Color.red;
 
@@ -464,14 +505,16 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void TrailerButton() {
+    private void TrailerButton()
+    {
 
         EditorGUILayout.BeginVertical(GUI.skin.window);
 
         if (trailAttacher)
             trailAttacher.enabled = EditorGUILayout.ToggleLeft("", trailAttacher.enabled, GUILayout.Width(15f));
 
-        if (GUILayout.Button("Trail\nAttacher", GUILayout.Width(50f), GUILayout.Height(40f), GUILayout.ExpandWidth(true))) {
+        if (GUILayout.Button("Trail\nAttacher", GUILayout.Width(50f), GUILayout.Height(40f), GUILayout.ExpandWidth(true)))
+        {
 
             if (trailAttacher)
                 Selection.activeGameObject = trailAttacher.gameObject;
@@ -480,14 +523,16 @@ public class RCCP_OtherAddonsEditor : Editor {
 
         }
 
-        if (!EditorUtility.IsPersistent(prop)) {
+        if (!EditorUtility.IsPersistent(prop))
+        {
 
             if (trailAttacher)
                 GUILayout.Label(("<color=#FF9500>Equipped</color>"), GUILayout.Width(50f), GUILayout.ExpandWidth(true));
             else
                 GUILayout.Label(("<color=#FF9500>Create</color>"), GUILayout.Width(50f), GUILayout.ExpandWidth(true));
 
-            if (trailAttacher) {
+            if (trailAttacher)
+            {
 
                 GUI.color = Color.red;
 
@@ -504,14 +549,16 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void LimiterButton() {
+    private void LimiterButton()
+    {
 
         EditorGUILayout.BeginVertical(GUI.skin.window);
 
         if (limiter)
             limiter.enabled = EditorGUILayout.ToggleLeft("", limiter.enabled, GUILayout.Width(15f));
 
-        if (GUILayout.Button("Limiter", GUILayout.Width(50f), GUILayout.Height(20f), GUILayout.ExpandWidth(true))) {
+        if (GUILayout.Button("Limiter", GUILayout.Width(50f), GUILayout.Height(20f), GUILayout.ExpandWidth(true)))
+        {
 
             if (limiter)
                 Selection.activeGameObject = limiter.gameObject;
@@ -520,14 +567,16 @@ public class RCCP_OtherAddonsEditor : Editor {
 
         }
 
-        if (!EditorUtility.IsPersistent(prop)) {
+        if (!EditorUtility.IsPersistent(prop))
+        {
 
             if (limiter)
                 GUILayout.Label(("<color=#FF9500>Equipped</color>"), GUILayout.Width(50f), GUILayout.ExpandWidth(true));
             else
                 GUILayout.Label(("<color=#FF9500>Create</color>"), GUILayout.Width(50f), GUILayout.ExpandWidth(true));
 
-            if (limiter) {
+            if (limiter)
+            {
 
                 GUI.color = Color.red;
 
@@ -544,14 +593,16 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void WheelBlurButton() {
+    private void WheelBlurButton()
+    {
 
         EditorGUILayout.BeginVertical(GUI.skin.window);
 
         if (wheelBlur)
             wheelBlur.enabled = EditorGUILayout.ToggleLeft("", wheelBlur.enabled, GUILayout.Width(15f));
 
-        if (GUILayout.Button("Wheel\nBlur", GUILayout.Width(50f), GUILayout.Height(40f), GUILayout.ExpandWidth(true))) {
+        if (GUILayout.Button("Wheel\nBlur", GUILayout.Width(50f), GUILayout.Height(40f), GUILayout.ExpandWidth(true)))
+        {
 
             if (wheelBlur)
                 Selection.activeGameObject = wheelBlur.gameObject;
@@ -560,14 +611,16 @@ public class RCCP_OtherAddonsEditor : Editor {
 
         }
 
-        if (!EditorUtility.IsPersistent(prop)) {
+        if (!EditorUtility.IsPersistent(prop))
+        {
 
             if (wheelBlur)
                 GUILayout.Label(("<color=#FF9500>Equipped</color>"), GUILayout.Width(50f), GUILayout.ExpandWidth(true));
             else
                 GUILayout.Label(("<color=#FF9500>Create</color>"), GUILayout.Width(50f), GUILayout.ExpandWidth(true));
 
-            if (wheelBlur) {
+            if (wheelBlur)
+            {
 
                 GUI.color = Color.red;
 
@@ -584,14 +637,16 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void FuelTankButton() {
+    private void FuelTankButton()
+    {
 
         EditorGUILayout.BeginVertical(GUI.skin.window);
 
         if (fuelTank)
             fuelTank.enabled = EditorGUILayout.ToggleLeft("", fuelTank.enabled, GUILayout.Width(15f));
 
-        if (GUILayout.Button("Fuel\nTank", GUILayout.Width(50f), GUILayout.Height(40f), GUILayout.ExpandWidth(true))) {
+        if (GUILayout.Button("Fuel\nTank", GUILayout.Width(50f), GUILayout.Height(40f), GUILayout.ExpandWidth(true)))
+        {
 
             if (fuelTank)
                 Selection.activeGameObject = fuelTank.gameObject;
@@ -600,14 +655,16 @@ public class RCCP_OtherAddonsEditor : Editor {
 
         }
 
-        if (!EditorUtility.IsPersistent(prop)) {
+        if (!EditorUtility.IsPersistent(prop))
+        {
 
             if (fuelTank)
                 GUILayout.Label(("<color=#FF9500>Equipped</color>"), GUILayout.Width(50f), GUILayout.ExpandWidth(true));
             else
                 GUILayout.Label(("<color=#FF9500>Create</color>"), GUILayout.Width(50f), GUILayout.ExpandWidth(true));
 
-            if (fuelTank) {
+            if (fuelTank)
+            {
 
                 GUI.color = Color.red;
 
@@ -624,22 +681,28 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void BodyTiltButton() {
+    private void BodyTiltButton()
+    {
 
         EditorGUILayout.BeginVertical(GUI.skin.window);
 
         if (bodyTilt)
             bodyTilt.enabled = EditorGUILayout.ToggleLeft("", bodyTilt.enabled, GUILayout.Width(15f));
 
-        if (GUILayout.Button("<color=#FF0000>[Experimental]</color>\nBody Tilt", GUILayout.Width(50f), GUILayout.Height(40f), GUILayout.ExpandWidth(true))) {
+        if (GUILayout.Button("<color=#FF0000>[Experimental]</color>\nBody Tilt", GUILayout.Width(50f), GUILayout.Height(40f), GUILayout.ExpandWidth(true)))
+        {
 
-            if (bodyTilt) {
+            if (bodyTilt)
+            {
 
                 Selection.activeGameObject = bodyTilt.gameObject;
 
-            } else {
+            }
+            else
+            {
 
-                EditorApplication.delayCall += () => {
+                EditorApplication.delayCall += () =>
+                {
 
                     if (EditorUtility.DisplayDialog("Realistic Car Controller Pro | Experimental Addon", "This is a experimental addon which may lead to unexpected results. Use it with caution, because it will make changes in the vehicle hierarchy. Backup your vehicle prefab before using it.\n\nDo you want to add this addon?", "Yes", "No"))
                         AddBodyTilt();
@@ -650,14 +713,16 @@ public class RCCP_OtherAddonsEditor : Editor {
 
         }
 
-        if (!EditorUtility.IsPersistent(prop)) {
+        if (!EditorUtility.IsPersistent(prop))
+        {
 
             if (bodyTilt)
                 GUILayout.Label(("<color=#FF9500>Equipped</color>"), GUILayout.Width(50f), GUILayout.ExpandWidth(true));
             else
                 GUILayout.Label(("<color=#FF9500>Create</color>"), GUILayout.Width(50f), GUILayout.ExpandWidth(true));
 
-            if (bodyTilt) {
+            if (bodyTilt)
+            {
 
                 GUI.color = Color.red;
 
@@ -674,7 +739,8 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void AddNOS() {
+    private void AddNOS()
+    {
 
         if (EditorUtility.IsPersistent(prop))
             return;
@@ -688,7 +754,8 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void AddDashboard() {
+    private void AddDashboard()
+    {
 
         if (EditorUtility.IsPersistent(prop))
             return;
@@ -702,7 +769,8 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void AddCameras() {
+    private void AddCameras()
+    {
 
         if (EditorUtility.IsPersistent(prop))
             return;
@@ -716,7 +784,8 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void AddExhausts() {
+    private void AddExhausts()
+    {
 
         if (EditorUtility.IsPersistent(prop))
             return;
@@ -730,7 +799,8 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void AddAI() {
+    private void AddAI()
+    {
 
         if (EditorUtility.IsPersistent(prop))
             return;
@@ -744,7 +814,8 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void AddRecorder() {
+    private void AddRecorder()
+    {
 
         if (EditorUtility.IsPersistent(prop))
             return;
@@ -758,7 +829,8 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void AddTrailAttacher() {
+    private void AddTrailAttacher()
+    {
 
         if (EditorUtility.IsPersistent(prop))
             return;
@@ -774,7 +846,8 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void AddLimiter() {
+    private void AddLimiter()
+    {
 
         if (EditorUtility.IsPersistent(prop))
             return;
@@ -788,7 +861,8 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void AddWheelBlur() {
+    private void AddWheelBlur()
+    {
 
         if (EditorUtility.IsPersistent(prop))
             return;
@@ -802,7 +876,8 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void AddFuelTank() {
+    private void AddFuelTank()
+    {
 
         if (EditorUtility.IsPersistent(prop))
             return;
@@ -816,7 +891,8 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void AddBodyTilt() {
+    private void AddBodyTilt()
+    {
 
         if (EditorUtility.IsPersistent(prop))
             return;
@@ -830,11 +906,13 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void RemoveNOS() {
+    private void RemoveNOS()
+    {
 
         bool isPrefab = PrefabUtility.IsPartOfAnyPrefab(Selection.activeGameObject);
 
-        if (isPrefab) {
+        if (isPrefab)
+        {
 
             bool disconnectPrefabConnection = (EditorUtility.DisplayDialog("Realistic Car Controller Pro | Unpacking Prefab", "This gameobject is connected to a prefab. In order to do remove this component, you'll need to unpack the prefab connection first. After removing the component, you can override your existing prefab with this gameobject.", "Disconnect", "Cancel"));
 
@@ -845,11 +923,13 @@ public class RCCP_OtherAddonsEditor : Editor {
 
         }
 
-        EditorApplication.delayCall += () => {
+        EditorApplication.delayCall += () =>
+        {
 
             bool answer = (EditorUtility.DisplayDialog("Realistic Car Controller Pro | Removing Component", "Are you sure want to remove this component? You can't undo this operation.", "Remove", "Cancel"));
 
-            if (answer) {
+            if (answer)
+            {
 
                 DestroyImmediate(nos.gameObject);
                 nos = null;
@@ -862,11 +942,13 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void RemoveDashboard() {
+    private void RemoveDashboard()
+    {
 
         bool isPrefab = PrefabUtility.IsPartOfAnyPrefab(Selection.activeGameObject);
 
-        if (isPrefab) {
+        if (isPrefab)
+        {
 
             bool disconnectPrefabConnection = (EditorUtility.DisplayDialog("Realistic Car Controller Pro | Unpacking Prefab", "This gameobject is connected to a prefab. In order to do remove this component, you'll need to unpack the prefab connection first. After removing the component, you can override your existing prefab with this gameobject.", "Disconnect", "Cancel"));
 
@@ -877,11 +959,13 @@ public class RCCP_OtherAddonsEditor : Editor {
 
         }
 
-        EditorApplication.delayCall += () => {
+        EditorApplication.delayCall += () =>
+        {
 
             bool answer = (EditorUtility.DisplayDialog("Realistic Car Controller Pro | Removing Component", "Are you sure want to remove this component? You can't undo this operation.", "Remove", "Cancel"));
 
-            if (answer) {
+            if (answer)
+            {
 
                 DestroyImmediate(dashboard.gameObject);
                 dashboard = null;
@@ -894,11 +978,13 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void RemoveCameras() {
+    private void RemoveCameras()
+    {
 
         bool isPrefab = PrefabUtility.IsPartOfAnyPrefab(Selection.activeGameObject);
 
-        if (isPrefab) {
+        if (isPrefab)
+        {
 
             bool disconnectPrefabConnection = (EditorUtility.DisplayDialog("Realistic Car Controller Pro | Unpacking Prefab", "This gameobject is connected to a prefab. In order to do remove this component, you'll need to unpack the prefab connection first. After removing the component, you can override your existing prefab with this gameobject.", "Disconnect", "Cancel"));
 
@@ -909,11 +995,13 @@ public class RCCP_OtherAddonsEditor : Editor {
 
         }
 
-        EditorApplication.delayCall += () => {
+        EditorApplication.delayCall += () =>
+        {
 
             bool answer = (EditorUtility.DisplayDialog("Realistic Car Controller Pro | Removing Component", "Are you sure want to remove this component? You can't undo this operation.", "Remove", "Cancel"));
 
-            if (answer) {
+            if (answer)
+            {
 
                 DestroyImmediate(cameras.gameObject);
                 cameras = null;
@@ -926,11 +1014,13 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void RemoveExhausts() {
+    private void RemoveExhausts()
+    {
 
         bool isPrefab = PrefabUtility.IsPartOfAnyPrefab(Selection.activeGameObject);
 
-        if (isPrefab) {
+        if (isPrefab)
+        {
 
             bool disconnectPrefabConnection = (EditorUtility.DisplayDialog("Realistic Car Controller Pro | Unpacking Prefab", "This gameobject is connected to a prefab. In order to do remove this component, you'll need to unpack the prefab connection first. After removing the component, you can override your existing prefab with this gameobject.", "Disconnect", "Cancel"));
 
@@ -941,11 +1031,13 @@ public class RCCP_OtherAddonsEditor : Editor {
 
         }
 
-        EditorApplication.delayCall += () => {
+        EditorApplication.delayCall += () =>
+        {
 
             bool answer = (EditorUtility.DisplayDialog("Realistic Car Controller Pro | Removing Component", "Are you sure want to remove this component? You can't undo this operation.", "Remove", "Cancel"));
 
-            if (answer) {
+            if (answer)
+            {
 
                 DestroyImmediate(exhausts.gameObject);
                 exhausts = null;
@@ -958,11 +1050,13 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void RemoveAI() {
+    private void RemoveAI()
+    {
 
         bool isPrefab = PrefabUtility.IsPartOfAnyPrefab(Selection.activeGameObject);
 
-        if (isPrefab) {
+        if (isPrefab)
+        {
 
             bool disconnectPrefabConnection = (EditorUtility.DisplayDialog("Realistic Car Controller Pro | Unpacking Prefab", "This gameobject is connected to a prefab. In order to do remove this component, you'll need to unpack the prefab connection first. After removing the component, you can override your existing prefab with this gameobject.", "Disconnect", "Cancel"));
 
@@ -973,11 +1067,13 @@ public class RCCP_OtherAddonsEditor : Editor {
 
         }
 
-        EditorApplication.delayCall += () => {
+        EditorApplication.delayCall += () =>
+        {
 
             bool answer = (EditorUtility.DisplayDialog("Realistic Car Controller Pro | Removing Component", "Are you sure want to remove this component? You can't undo this operation.", "Remove", "Cancel"));
 
-            if (answer) {
+            if (answer)
+            {
 
                 DestroyImmediate(AI.gameObject);
                 AI = null;
@@ -990,11 +1086,13 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void RemoveRecorder() {
+    private void RemoveRecorder()
+    {
 
         bool isPrefab = PrefabUtility.IsPartOfAnyPrefab(Selection.activeGameObject);
 
-        if (isPrefab) {
+        if (isPrefab)
+        {
 
             bool disconnectPrefabConnection = (EditorUtility.DisplayDialog("Realistic Car Controller Pro | Unpacking Prefab", "This gameobject is connected to a prefab. In order to do remove this component, you'll need to unpack the prefab connection first. After removing the component, you can override your existing prefab with this gameobject.", "Disconnect", "Cancel"));
 
@@ -1005,11 +1103,13 @@ public class RCCP_OtherAddonsEditor : Editor {
 
         }
 
-        EditorApplication.delayCall += () => {
+        EditorApplication.delayCall += () =>
+        {
 
             bool answer = (EditorUtility.DisplayDialog("Realistic Car Controller Pro | Removing Component", "Are you sure want to remove this component? You can't undo this operation.", "Remove", "Cancel"));
 
-            if (answer) {
+            if (answer)
+            {
 
                 DestroyImmediate(recorder.gameObject);
                 recorder = null;
@@ -1022,11 +1122,13 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void RemoveTrailAttacher() {
+    private void RemoveTrailAttacher()
+    {
 
         bool isPrefab = PrefabUtility.IsPartOfAnyPrefab(Selection.activeGameObject);
 
-        if (isPrefab) {
+        if (isPrefab)
+        {
 
             bool disconnectPrefabConnection = (EditorUtility.DisplayDialog("Realistic Car Controller Pro | Unpacking Prefab", "This gameobject is connected to a prefab. In order to do remove this component, you'll need to unpack the prefab connection first. After removing the component, you can override your existing prefab with this gameobject.", "Disconnect", "Cancel"));
 
@@ -1037,11 +1139,13 @@ public class RCCP_OtherAddonsEditor : Editor {
 
         }
 
-        EditorApplication.delayCall += () => {
+        EditorApplication.delayCall += () =>
+        {
 
             bool answer = (EditorUtility.DisplayDialog("Realistic Car Controller Pro | Removing Component", "Are you sure want to remove this component? You can't undo this operation.", "Remove", "Cancel"));
 
-            if (answer) {
+            if (answer)
+            {
 
                 DestroyImmediate(trailAttacher.gameObject);
                 trailAttacher = null;
@@ -1054,11 +1158,13 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void RemoveLimiter() {
+    private void RemoveLimiter()
+    {
 
         bool isPrefab = PrefabUtility.IsPartOfAnyPrefab(Selection.activeGameObject);
 
-        if (isPrefab) {
+        if (isPrefab)
+        {
 
             bool disconnectPrefabConnection = (EditorUtility.DisplayDialog("Realistic Car Controller Pro | Unpacking Prefab", "This gameobject is connected to a prefab. In order to do remove this component, you'll need to unpack the prefab connection first. After removing the component, you can override your existing prefab with this gameobject.", "Disconnect", "Cancel"));
 
@@ -1069,11 +1175,13 @@ public class RCCP_OtherAddonsEditor : Editor {
 
         }
 
-        EditorApplication.delayCall += () => {
+        EditorApplication.delayCall += () =>
+        {
 
             bool answer = (EditorUtility.DisplayDialog("Realistic Car Controller Pro | Removing Component", "Are you sure want to remove this component? You can't undo this operation.", "Remove", "Cancel"));
 
-            if (answer) {
+            if (answer)
+            {
 
                 DestroyImmediate(limiter.gameObject);
                 limiter = null;
@@ -1086,11 +1194,13 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void RemoveWheelBlur() {
+    private void RemoveWheelBlur()
+    {
 
         bool isPrefab = PrefabUtility.IsPartOfAnyPrefab(Selection.activeGameObject);
 
-        if (isPrefab) {
+        if (isPrefab)
+        {
 
             bool disconnectPrefabConnection = (EditorUtility.DisplayDialog("Realistic Car Controller Pro | Unpacking Prefab", "This gameobject is connected to a prefab. In order to do remove this component, you'll need to unpack the prefab connection first. After removing the component, you can override your existing prefab with this gameobject.", "Disconnect", "Cancel"));
 
@@ -1101,11 +1211,13 @@ public class RCCP_OtherAddonsEditor : Editor {
 
         }
 
-        EditorApplication.delayCall += () => {
+        EditorApplication.delayCall += () =>
+        {
 
             bool answer = (EditorUtility.DisplayDialog("Realistic Car Controller Pro | Removing Component", "Are you sure want to remove this component? You can't undo this operation.", "Remove", "Cancel"));
 
-            if (answer) {
+            if (answer)
+            {
 
                 DestroyImmediate(wheelBlur.gameObject);
                 wheelBlur = null;
@@ -1118,11 +1230,13 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void RemoveFuelTank() {
+    private void RemoveFuelTank()
+    {
 
         bool isPrefab = PrefabUtility.IsPartOfAnyPrefab(Selection.activeGameObject);
 
-        if (isPrefab) {
+        if (isPrefab)
+        {
 
             bool disconnectPrefabConnection = (EditorUtility.DisplayDialog("Realistic Car Controller Pro | Unpacking Prefab", "This gameobject is connected to a prefab. In order to do remove this component, you'll need to unpack the prefab connection first. After removing the component, you can override your existing prefab with this gameobject.", "Disconnect", "Cancel"));
 
@@ -1133,11 +1247,13 @@ public class RCCP_OtherAddonsEditor : Editor {
 
         }
 
-        EditorApplication.delayCall += () => {
+        EditorApplication.delayCall += () =>
+        {
 
             bool answer = (EditorUtility.DisplayDialog("Realistic Car Controller Pro | Removing Component", "Are you sure want to remove this component? You can't undo this operation.", "Remove", "Cancel"));
 
-            if (answer) {
+            if (answer)
+            {
 
                 DestroyImmediate(fuelTank.gameObject);
                 fuelTank = null;
@@ -1150,11 +1266,13 @@ public class RCCP_OtherAddonsEditor : Editor {
 
     }
 
-    private void RemoveBodyTilt() {
+    private void RemoveBodyTilt()
+    {
 
         bool isPrefab = PrefabUtility.IsPartOfAnyPrefab(Selection.activeGameObject);
 
-        if (isPrefab) {
+        if (isPrefab)
+        {
 
             bool disconnectPrefabConnection = (EditorUtility.DisplayDialog("Realistic Car Controller Pro | Unpacking Prefab", "This gameobject is connected to a prefab. In order to do remove this component, you'll need to unpack the prefab connection first. After removing the component, you can override your existing prefab with this gameobject.", "Disconnect", "Cancel"));
 
@@ -1165,11 +1283,13 @@ public class RCCP_OtherAddonsEditor : Editor {
 
         }
 
-        EditorApplication.delayCall += () => {
+        EditorApplication.delayCall += () =>
+        {
 
             bool answer = (EditorUtility.DisplayDialog("Realistic Car Controller Pro | Removing Component", "Are you sure want to remove this component? You can't undo this operation.", "Remove", "Cancel"));
 
-            if (answer) {
+            if (answer)
+            {
 
                 DestroyImmediate(bodyTilt.gameObject);
                 bodyTilt = null;

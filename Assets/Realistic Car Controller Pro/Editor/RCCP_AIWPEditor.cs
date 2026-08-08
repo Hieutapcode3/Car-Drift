@@ -1,4 +1,4 @@
-﻿//----------------------------------------------
+//----------------------------------------------
 //        Realistic Car Controller Pro
 //
 // Copyright © 2014 - 2025 BoneCracker Games
@@ -34,6 +34,7 @@ public class RCCP_AIWPEditor : Editor {
         EditorGUILayout.HelpBox("Create Waypoints By Shift + Left Mouse Button On Your Road", MessageType.Info);
 
         EditorGUILayout.PropertyField(serializedObject.FindProperty("waypoints"), new GUIContent("Waypoints", "Waypoints"), true);
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("waypointRadius"), new GUIContent("Waypoint Radius", "Check radius of waypoints"), true);
 
         foreach (Transform item in wpScript.transform) {
 

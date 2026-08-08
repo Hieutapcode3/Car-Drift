@@ -1,7 +1,7 @@
 //----------------------------------------------
 //        Realistic Car Controller Pro
 //
-// Copyright © 2014 - 2025 BoneCracker Games
+// Copyright Â© 2014 - 2025 BoneCracker Games
 // https://www.bonecrackergames.com
 // Ekrem Bugra Ozdoganlar
 //
@@ -46,6 +46,17 @@ public class RCCP_UIManager : RCCP_UIComponent {
     /// Main car controller.
     /// </summary>
     private RCCP_CarController carController;
+
+    [Header("Countdown")]
+    [Tooltip("Parent object of countdown UI")] public GameObject countdownObj;
+    [Tooltip("TextMeshProUGUI for displaying countdown number/text")] public TextMeshProUGUI countdownText;
+
+    [Header("Race Timer")]
+    public TextMeshProUGUI raceTimerText;
+
+    [Header("Lap UI")]
+    public TextMeshProUGUI lapText;
+    private int currentLap = 1;
 
     [Header("Panels")]
     [Tooltip("Dashboard panel")] public GameObject dashboard;
@@ -197,6 +208,8 @@ public class RCCP_UIManager : RCCP_UIComponent {
         RCCP_Events.Event_OnRCCPUISpawned(this);
 
         RCCP_InputManager.OnOptions += RCCP_InputManager_OnOptions;
+
+        UpdateLapDisplay();
 
     }
 
@@ -393,6 +406,109 @@ public class RCCP_UIManager : RCCP_UIComponent {
 
         RCCP_InputManager.OnOptions -= RCCP_InputManager_OnOptions;
 
+    }
+
+    private Coroutine countdownRoutine;
+
+    public void StartCountdown(int seconds, System.Action onComplete = null)
+    {
+        if (countdownRoutine != null)
+            StopCoroutine(countdownRoutine);
+
+        countdownRoutine = StartCoroutine(CountdownRoutine(seconds, onComplete));
+    }
+
+    private IEnumerator CountdownRoutine(int seconds, System.Action onComplete)
+    {
+        if (countdownObj)
+            countdownObj.SetActive(true);
+
+        for (int i = seconds; i > 0; i--)
+        {
+            if (countdownText)
+                countdownText.text = i.ToString();
+            yield return new WaitForSecondsRealtime(1f);
+        }
+
+        if (countdownText)
+            countdownText.text = "GO!";
+
+        yield return new WaitForSecondsRealtime(0.6f);
+
+        if (countdownObj)
+            countdownObj.SetActive(false);
+
+        onComplete?.Invoke();
+    }
+
+    private float raceElapsedTime;
+    private bool raceTimerRunning;
+
+    public float RaceElapsedTime => raceElapsedTime;
+
+    public void StartRaceTimer()
+    {
+        raceTimerRunning = true;
+    }
+
+    public void StopRaceTimer()
+    {
+        raceTimerRunning = false;
+    }
+
+    public void ResetRaceTimer()
+    {
+        raceElapsedTime = 0f;
+        raceTimerRunning = false;
+        UpdateRaceTimerDisplay();
+    }
+
+    private void Update() {
+
+        if (raceTimerRunning)
+        {
+            raceElapsedTime += Time.deltaTime;
+            UpdateRaceTimerDisplay();
+        }
+
+    }
+
+    private void UpdateRaceTimerDisplay()
+    {
+        if (!raceTimerText) return;
+
+        int minutes = (int)(raceElapsedTime / 60f);
+        int seconds = (int)(raceElapsedTime % 60f);
+        int centiseconds = (int)((raceElapsedTime * 100f) % 100f);
+        raceTimerText.text = $"{minutes:00}:{seconds:00}:{centiseconds:00}";
+    }
+    public int CurrentLap => currentLap;
+    public void SetLap(int lap)
+    {
+        currentLap = lap;
+        UpdateLapDisplay();
+    }
+    public void IncrementLap()
+    {
+        currentLap++;
+        UpdateLapDisplay();
+    }
+    public void ResetLap()
+    {
+        currentLap = 1;
+        UpdateLapDisplay();
+    }
+    public void UpdateLapDisplay()
+    {
+        if (!lapText) return;
+
+        int totalLaps = 2;
+        if (RaceProgressTracker.Instance != null)
+        {
+            totalLaps = RaceProgressTracker.Instance.totalLaps;
+        }
+
+        lapText.text = $"{currentLap}/{totalLaps} LAPS";
     }
 
 }

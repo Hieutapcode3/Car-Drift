@@ -14,7 +14,7 @@ public class RaceProgressTracker : MonoSingleton<RaceProgressTracker>
 
     [Header("Player Waypoint")]
     [Tooltip("Distance (m) within which the player is considered to have 'passed' a waypoint.")]
-    public float playerWpPassDistance = 20f;
+    public float playerWpPassDistance = 10f;
 
     [Header("Post-Finish Settings")]
     public int stopAtWaypointAfterFinish = 10;
@@ -30,11 +30,11 @@ public class RaceProgressTracker : MonoSingleton<RaceProgressTracker>
     private int wpCount;
     private float timer;
 
-    // Per-player lap & waypoint tracking (no RCCP_AI)
     private class LapTrackData
     {
         public int completedLaps = 0;
-        public int currentTargetWpIdx = 0; // Next waypoint player is heading toward (mirrors RCCP_AI.currentWaypointIndex)
+        public int currentTargetWpIdx = 1;
+        public int totalWaypointsPassed = 0;
         public bool canCompleteLap = false;
     }
 
@@ -44,12 +44,11 @@ public class RaceProgressTracker : MonoSingleton<RaceProgressTracker>
     private readonly HashSet<CarController> finishedCars = new HashSet<CarController>();
     public IReadOnlyCollection<CarController> FinishedCars => finishedCars;
 
-    // Per-AI rank stabilization
     private class RankStabilityData
     {
-        public int displayedRank = 0;    // Rank currently shown in text
-        public int pendingRank = 0;      // Rank computed this update
-        public int consecutiveCount = 0; // How many updates pendingRank has stayed the same
+        public int displayedRank = 0;
+        public int pendingRank = 0;
+        public int consecutiveCount = 0;
     }
 
     private readonly Dictionary<CarController, RankStabilityData> rankStability
@@ -74,7 +73,13 @@ public class RaceProgressTracker : MonoSingleton<RaceProgressTracker>
     private void Start()
     {
         if (waypointsContainer == null)
+        {
+#if UNITY_2023_1_OR_NEWER
             waypointsContainer = FindFirstObjectByType<RCCP_AIWaypointsContainer>();
+#else
+            waypointsContainer = FindObjectOfType<RCCP_AIWaypointsContainer>();
+#endif
+        }
 
         BuildCumulativeDistanceTable();
     }
@@ -124,83 +129,126 @@ public class RaceProgressTracker : MonoSingleton<RaceProgressTracker>
         Debug.Log($"[RaceProgressTracker] 1 lap = {totalLapDistance:F1}m x {totalLaps} laps = {totalRaceDistance:F1}m");
     }
 
-    // Advance the player's target waypoint when close enough — mirrors how RCCP_AI tracks currentWaypointIndex
-    private void UpdatePlayerTargetWaypoint(CarController car, Vector3 carPos)
+    private void UpdatePlayerTargetWaypoint(CarController car, Vector3 carPos, Vector3 carForward)
     {
         if (!playerLapData.TryGetValue(car, out LapTrackData d)) return;
+        if (waypointsContainer == null || waypointsContainer.waypoints == null || wpCount == 0) return;
 
-        var targetWp = waypointsContainer.waypoints[d.currentTargetWpIdx];
+        var targetWp = waypointsContainer.waypoints[d.currentTargetWpIdx % wpCount];
         if (targetWp == null) return;
 
+        float radius = (waypointsContainer != null && waypointsContainer.waypointRadius > 0) ? waypointsContainer.waypointRadius : playerWpPassDistance;
         float distSq = (carPos - targetWp.transform.position).sqrMagnitude;
-        float threshSq = playerWpPassDistance * playerWpPassDistance;
+        float threshSq = radius * radius;
 
-        if (distSq > threshSq) return;
+        Vector3 toWp = targetWp.transform.position - carPos;
+        bool passedWpPlane = Vector3.Dot(carForward, toWp) < 0f && distSq < (threshSq * 3.24f);
 
-        int passedIdx = d.currentTargetWpIdx;
+        if (distSq > threshSq && !passedWpPlane) return;
+
+        int passedIdx = d.currentTargetWpIdx % wpCount;
         d.currentTargetWpIdx = (passedIdx + 1) % wpCount;
+        d.totalWaypointsPassed++;
 
-        // Crossed into the second half → allow lap completion
         if (passedIdx >= wpCount / 2)
             d.canCompleteLap = true;
 
-        // Crossed back to waypoint 0 (finish line)
-        if (passedIdx == wpCount - 1 && d.canCompleteLap)
+        if (passedIdx == 0 && d.canCompleteLap)
         {
             d.completedLaps++;
             d.canCompleteLap = false;
-            Debug.Log($"[RaceProgressTracker] Player completed lap {d.completedLaps}/{totalLaps}");
+            Debug.Log($"[RaceProgressTracker] 🏁 Player completed lap {d.completedLaps}/{totalLaps}");
+
+            if (car.controllerType == ControllerType.Player && RCCP_UIManager.Instance != null)
+            {
+                RCCP_UIManager.Instance.SetLap(d.completedLaps + 1);
+            }
         }
     }
 
-    private float CalcTotalPoints(CarController car, out int outWpIdx, out int outLaps)
+    private float CalcDistanceInLap(Vector3 carPos, int targetWpIdx)
+    {
+        if (wpCumDist == null || waypointsContainer == null || waypointsContainer.waypoints == null || wpCount < 2)
+            return 0f;
+
+        int fromIdx = (targetWpIdx - 1 + wpCount) % wpCount;
+
+        var wpA = waypointsContainer.waypoints[fromIdx];
+        var wpB = waypointsContainer.waypoints[targetWpIdx];
+
+        if (wpA == null || wpB == null) return wpCumDist[Mathf.Clamp(fromIdx, 0, wpCount)];
+
+        Vector3 a = wpA.transform.position;
+        Vector3 b = wpB.transform.position;
+        Vector3 ab = b - a;
+        float segLenSq = ab.sqrMagnitude;
+
+        float t = 0f;
+        if (segLenSq > 0.0001f)
+        {
+            t = Vector3.Dot(carPos - a, ab) / segLenSq;
+            t = Mathf.Clamp01(t);
+        }
+
+        float startDist = wpCumDist[fromIdx];
+        float endDist = (fromIdx == wpCount - 1 && targetWpIdx == 0) ? wpCumDist[wpCount] : wpCumDist[targetWpIdx];
+        float segLen = endDist - startDist;
+
+        return startDist + t * segLen;
+    }
+
+    private float CalcTotalPoints(CarController car, out int outWpIdx, out int outLaps, out float outDistInLap)
     {
         outWpIdx = 0;
         outLaps = 0;
+        outDistInLap = 0f;
 
         if (wpCumDist == null || totalRaceDistance <= 0f)
             return car.transform.position.z;
 
-        Vector3 carPos = car.transform.position;
+        Transform activeTransform = (car.carController != null) ? car.carController.transform : car.transform;
+        Vector3 carPos = activeTransform.position;
+        Vector3 carForward = activeTransform.forward;
         int wpIdx;
         int laps;
 
-        if (car.aiController != null)
+        if (car.controllerType == ControllerType.AI && car.aiController != null)
         {
-            // AI: read directly from RCCP_AI — already points to the next (target) waypoint
             laps = car.aiController.lap;
             wpIdx = Mathf.Clamp(car.aiController.currentWaypointIndex, 0, wpCount - 1);
+
+            car.indexTargetPoint = wpIdx;
+            car.totalWaypointsPassed = car.aiController.totalWaypointsPassed;
+            car.currentLapCount = laps + 1;
         }
         else
         {
-            // Player: advance sequential target waypoint, same convention as RCCP_AI
-            UpdatePlayerTargetWaypoint(car, carPos);
+            UpdatePlayerTargetWaypoint(car, carPos, carForward);
             laps = playerLapData.TryGetValue(car, out var d) ? d.completedLaps : 0;
             wpIdx = playerLapData.TryGetValue(car, out var d2) ? d2.currentTargetWpIdx : 0;
+
+            car.indexTargetPoint = wpIdx;
+            car.totalWaypointsPassed = playerLapData.TryGetValue(car, out var d3) ? d3.totalWaypointsPassed : 0;
+            car.currentLapCount = laps + 1;
         }
 
         outWpIdx = wpIdx;
         outLaps = laps;
 
-        int nextIdx = (wpIdx + 1) % wpCount;
-        var nextWp = waypointsContainer.waypoints[nextIdx];
-        float distToNext = nextWp != null
-            ? Vector3.Distance(carPos, nextWp.transform.position)
-            : 0f;
+        outDistInLap = CalcDistanceInLap(carPos, wpIdx);
 
-        float lapScore = laps * 100_000_000f;
-        float wpScore = wpIdx * 100_000f;
-        float distScore = Mathf.Max(0f, 100_000f - distToNext);
-
-        return lapScore + wpScore + distScore;
+        return laps * totalLapDistance + outDistInLap;
     }
 
     private void UpdateAllRanks()
     {
+#if UNITY_2023_1_OR_NEWER
         CarController[] allCars = FindObjectsByType<CarController>(FindObjectsSortMode.None);
+#else
+        CarController[] allCars = FindObjectsOfType<CarController>();
+#endif
         if (allCars == null || allCars.Length == 0) return;
 
-        // Register new players and AI cars
         foreach (var car in allCars)
         {
             if (car == null || car.controllerType == ControllerType.Menu) continue;
@@ -208,7 +256,7 @@ public class RaceProgressTracker : MonoSingleton<RaceProgressTracker>
             if (car.controllerType == ControllerType.Player && !playerLapData.ContainsKey(car))
                 playerLapData[car] = new LapTrackData();
 
-            if (car.controllerType == ControllerType.AI && !rankStability.ContainsKey(car))
+            if (!rankStability.ContainsKey(car))
                 rankStability[car] = new RankStabilityData();
         }
 
@@ -219,13 +267,9 @@ public class RaceProgressTracker : MonoSingleton<RaceProgressTracker>
             if (car == null || !car.gameObject.activeInHierarchy) continue;
             if (car.controllerType == ControllerType.Menu) continue;
 
-            float points = CalcTotalPoints(car, out int wpIdx, out int laps);
-
-            // Kiểm tra xe đã hoàn thành và xử lý dừng xe cho AI nếu tới waypoint thứ 10
+            float points = CalcTotalPoints(car, out int wpIdx, out int laps, out float distInLap);
             CheckVehicleFinish(car, laps, wpIdx);
 
-            float distInLap = (wpCumDist != null && wpIdx < wpCumDist.Length)
-                ? wpCumDist[wpIdx] : 0f;
             float pct = totalRaceDistance > 0f
                 ? Mathf.Clamp01((laps * totalLapDistance + distInLap) / totalRaceDistance) * 100f
                 : 0f;
@@ -238,17 +282,14 @@ public class RaceProgressTracker : MonoSingleton<RaceProgressTracker>
             });
         }
 
-        // Sort descending: highest totalPoints = rank 1
         rankings.Sort((a, b) => b.totalPoints.CompareTo(a.totalPoints));
 
-        // Assign computed ranks and apply stabilized display for AI
         for (int i = 0; i < rankings.Count; i++)
         {
             var vp = rankings[i];
             vp.rank = i + 1;
             rankings[i] = vp;
 
-            if (vp.car.controllerType != ControllerType.AI) continue;
             if (!rankStability.TryGetValue(vp.car, out var stability)) continue;
 
             if (stability.pendingRank == vp.rank)
@@ -257,12 +298,10 @@ public class RaceProgressTracker : MonoSingleton<RaceProgressTracker>
             }
             else
             {
-                // New rank computed — reset stability counter
                 stability.pendingRank = vp.rank;
                 stability.consecutiveCount = 1;
             }
 
-            // Only push new rank to text once it's been stable long enough
             if (stability.consecutiveCount >= rankStabilityFrames && stability.displayedRank != vp.rank)
             {
                 stability.displayedRank = vp.rank;
@@ -291,6 +330,23 @@ public class RaceProgressTracker : MonoSingleton<RaceProgressTracker>
         return 0;
     }
 
+    public int GetTargetWaypointIndex(CarController car)
+    {
+        if (car == null) return 0;
+
+        if (car.controllerType == ControllerType.AI && car.aiController != null)
+        {
+            return car.aiController.currentWaypointIndex;
+        }
+
+        if (playerLapData.TryGetValue(car, out var d))
+        {
+            return d.currentTargetWpIdx;
+        }
+
+        return 0;
+    }
+
     public bool IsVehicleFinished(CarController car)
     {
         return car != null && finishedCars.Contains(car);
@@ -305,21 +361,23 @@ public class RaceProgressTracker : MonoSingleton<RaceProgressTracker>
             if (!finishedCars.Contains(car))
             {
                 finishedCars.Add(car);
-                // Debug.Log($"[RaceProgressTracker] 🏁 Xe '{car.name}' ({car.controllerType}) ĐÃ HOÀN THÀNH CUỘC ĐUA! ({laps}/{totalLaps} laps)");
-
-                // Thêm vào list finishedVehicles của RCCP_SceneManager
                 if (RCCP_SceneManager.Instance != null && car.carController != null)
                 {
                     RCCP_SceneManager.Instance.RegisterFinishedVehicle(car.carController);
                 }
+
+                if (car.controllerType == ControllerType.Player && GameManager.Instance != null)
+                {
+                    GameManager.Instance.OnFinish();
+                }
             }
+
             if (car.controllerType == ControllerType.AI && car.aiController != null)
             {
                 int targetStopWp = Mathf.Min(stopAtWaypointAfterFinish, wpCount > 0 ? wpCount - 1 : stopAtWaypointAfterFinish);
 
                 if (car.aiController.navigationMode != RCCP_AI.NavigationMode.Off && currentWpIdx >= targetStopWp)
                 {
-                    // Debug.Log($"[RaceProgressTracker] 🛑 CarAI '{car.name}' đã hoàn thành cuộc đua và đạt waypoint {currentWpIdx}/{targetStopWp}. Tiến hành DỪNG XE!");
                     car.aiController.navigationMode = RCCP_AI.NavigationMode.Off;
                     car.aiController.throttleInput = 0f;
                     car.aiController.brakeInput = 0f;
@@ -328,7 +386,6 @@ public class RaceProgressTracker : MonoSingleton<RaceProgressTracker>
                 }
                 else if (car.aiController.navigationMode == RCCP_AI.NavigationMode.Off)
                 {
-                    // Giữ xe AI dừng hẳn
                     car.aiController.throttleInput = 0f;
                     car.aiController.brakeInput = 0f;
                     car.aiController.handbrakeInput = 1f;

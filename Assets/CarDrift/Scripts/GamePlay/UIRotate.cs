@@ -26,9 +26,9 @@ public class UIRotate : MonoBehaviour
         {
             cameraTransform = targetCamera.transform;
         }
-        else if (Camera.main != null)
+        else if (Camera.main != null && RCCP_SceneManager.Instance != null && RCCP_SceneManager.Instance.activePlayerCamera != null)
         {
-            targetCamera = Camera.main;
+            targetCamera = RCCP_SceneManager.Instance.activePlayerCamera.actualCamera;
             cameraTransform = targetCamera.transform;
         }
     }

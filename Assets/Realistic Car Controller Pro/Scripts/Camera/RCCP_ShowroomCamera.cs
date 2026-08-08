@@ -1,4 +1,4 @@
-﻿//----------------------------------------------
+//----------------------------------------------
 //        Realistic Car Controller Pro
 //
 // Copyright © 2014 - 2025 BoneCracker Games
@@ -82,6 +82,12 @@ public class RCCP_ShowroomCamera : RCCP_GenericComponent {
     /// Orbit Y.
     /// </summary>
     public float orbitY = 0f;
+
+    private void OnEnable() {
+
+        SnapToTarget();
+
+    }
 
     private void Update() {
 
@@ -171,6 +177,23 @@ public class RCCP_ShowroomCamera : RCCP_GenericComponent {
         // Receiving drag input from UI.
         orbitX += pointerData.delta.x * dragSpeed * .02f;
         orbitY -= pointerData.delta.y * dragSpeed * .02f;
+
+    }
+
+    /// <summary>
+    /// Đặt vị trí và góc xoay của ShowroomCamera ngay lập tức tại vị trí Target, bỏ qua hiệu ứng trượt mượt (smooth).
+    /// </summary>
+    public void SnapToTarget() {
+
+        if (!target)
+            return;
+
+        orbitY = ClampAngle(orbitY, minY, maxY);
+        Quaternion rotation = Quaternion.Euler(orbitY, orbitX, 0);
+        Vector3 position = rotation * new Vector3(0f, 0f, -distance) + target.transform.position;
+
+        transform.rotation = rotation;
+        transform.position = position;
 
     }
 

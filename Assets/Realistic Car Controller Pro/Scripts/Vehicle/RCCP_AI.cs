@@ -1,4 +1,4 @@
-﻿//----------------------------------------------
+//----------------------------------------------
 //        Realistic Car Controller Pro
 //
 // Copyright © 2014 - 2025 BoneCracker Games
@@ -320,8 +320,13 @@ public class RCCP_AI : RCCP_Component {
                 // Setting destination of the Navigator.
                 navigator.SetDestination(waypointsContainer.waypoints[currentWaypointIndex].transform.position);
 
-                //  If distance to the next waypoint is not 0, and close enough to the vehicle, increase index of the current waypoint and total waypoint.
-                if (distanceToNextWaypoint != 0 && distanceToNextWaypoint < nextWaypointPassDistance) {
+                float effectivePassDistance = (waypointsContainer != null && waypointsContainer.waypointRadius > 0) ? Mathf.Max(nextWaypointPassDistance, waypointsContainer.waypointRadius) : nextWaypointPassDistance;
+
+                Vector3 toWp = currentWaypoint.transform.position - transform.position;
+                bool passedWpPlane = Vector3.Dot(transform.forward, toWp) < 0f && distanceToNextWaypoint < (effectivePassDistance * 1.8f);
+
+                //  If distance to the next waypoint is close enough, or vehicle already passed the waypoint plane, increase index.
+                if (distanceToNextWaypoint != 0 && (distanceToNextWaypoint < effectivePassDistance || passedWpPlane)) {
 
                     currentWaypointIndex++;
                     totalWaypointsPassed++;

@@ -1,4 +1,4 @@
-﻿//----------------------------------------------
+//----------------------------------------------
 //        Realistic Car Controller Pro
 //
 // Copyright © 2014 - 2025 BoneCracker Games
@@ -22,6 +22,11 @@ public class RCCP_AIWaypointsContainer : RCCP_GenericComponent {
     /// All waypoints.
     /// </summary>
     public List<RCCP_Waypoint> waypoints = new List<RCCP_Waypoint>();
+
+    /// <summary>
+    /// Bán kính vòng tròn nhận diện (check radius) của Waypoint.
+    /// </summary>
+    public float waypointRadius = 20f;
 
     private void Awake() {
 
@@ -62,7 +67,7 @@ public class RCCP_AIWaypointsContainer : RCCP_GenericComponent {
                 //  Drawing gizmos.
                 Gizmos.color = new Color(0.0f, 1.0f, 1.0f, 0.3f);
                 Gizmos.DrawSphere(waypoints[i].transform.position, 2);
-                Gizmos.DrawWireSphere(waypoints[i].transform.position, 20f);
+                Gizmos.DrawWireSphere(waypoints[i].transform.position, waypointRadius);
 
                 //  If current waypoint is not last waypoint...
                 if (i < waypoints.Count - 1) {
