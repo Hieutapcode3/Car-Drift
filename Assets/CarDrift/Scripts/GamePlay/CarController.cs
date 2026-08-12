@@ -506,19 +506,24 @@ public class CarController : MonoBehaviour
             damageController = carController.GetComponentInChildren<RCCP_Damage>(true);
         }
 
-        if (!isDamageable)
+        if (!isDamageable || IsMenuModel)
         {
             if (damageController != null)
             {
-                Destroy(damageController);
-                damageController = null;
+                damageController.enabled = false;
             }
             if (carController != null)
             {
                 RCCP_DetachablePart[] detachableParts = carController.GetComponentsInChildren<RCCP_DetachablePart>(true);
                 foreach (RCCP_DetachablePart part in detachableParts)
                 {
-                    Destroy(part);
+                    part.enabled = false;
+                    Rigidbody partRb = part.GetComponent<Rigidbody>();
+                    if (partRb != null)
+                    {
+                        partRb.isKinematic = true;
+                        partRb.useGravity = false;
+                    }
                 }
             }
         }
@@ -549,10 +554,7 @@ public class CarController : MonoBehaviour
                 carController.SetCanControl(false);
             }
 
-            if (freezePhysicsInMenu)
-            {
-                SetKinematicAllParts(true);
-            }
+            SetKinematicAllParts(true);
 
             if (aiController != null)
             {
@@ -575,14 +577,13 @@ public class CarController : MonoBehaviour
                     ApplyAIDifficulty(aiDifficulty);
                 }
             }
-
             if (carController != null)
             {
-                carController.externalControl = true; // AI luôn dùng externalControl
+                carController.externalControl = true;
                 carController.SetCanControl(isAIActive);
             }
 
-            if (randomColorForAI && isPlaying)
+            if (randomColorForAI)
             {
                 SetRandomColor();
             }

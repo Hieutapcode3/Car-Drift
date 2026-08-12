@@ -12,18 +12,9 @@ public struct CarColorData
 [CreateAssetMenu(fileName = "ColorParamSO", menuName = "CarDrift/ColorParamSO")]
 public class ColorParamSO : ScriptableObject
 {
-    private static ColorParamSO instance;
-    public static ColorParamSO Instance
-    {
-        get
-        {
-            if (instance == null)
-            {
-                instance = Resources.Load<ColorParamSO>("ColorParamSO");
-            }
-            return instance;
-        }
-    }
+    private const string ResourcePath = "Data/ColorParamSO";
+    private static ResourceAsset<ColorParamSO> asset = new ResourceAsset<ColorParamSO>(ResourcePath);
+    public static ColorParamSO Instance => asset.Value;
 
     public List<CarColorData> colorList = new List<CarColorData>()
     {

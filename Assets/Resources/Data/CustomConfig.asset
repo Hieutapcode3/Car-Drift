@@ -1,0 +1,95 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d12244d6b8bf3374cbc81e96b4a5e348, type: 3}
+  m_Name: CustomConfig
+  m_EditorClassIdentifier: 
+  wheels:
+  - priceGold: 1000
+    icon: {fileID: 21300000, guid: 3cd6b04ca25a4a040a9261c8a79f3171, type: 3}
+  - priceGold: 2000
+    icon: {fileID: 21300000, guid: 06f9aa410aeb54d499417897d7075bc4, type: 3}
+  - priceGold: 3000
+    icon: {fileID: 21300000, guid: e52fd7f2a5e5d42478a2b7bbb58837bf, type: 3}
+  - priceGold: 4000
+    icon: {fileID: 21300000, guid: 24d81be9b832abc4eb68ba1772009e91, type: 3}
+  - priceGold: 5000
+    icon: {fileID: 21300000, guid: 25e36520fde817e4ab3dd69a9b9c72da, type: 3}
+  - priceGold: 6000
+    icon: {fileID: 21300000, guid: 4e42e057acfa8c44dacf0e9241a9b275, type: 3}
+  - priceGold: 7000
+    icon: {fileID: 21300000, guid: 15c64ba9961cbe247b1fdb77b09cc532, type: 3}
+  paints:
+  - priceGold: 1600
+    colorType: 1
+  - priceGold: 1600
+    colorType: 2
+  - priceGold: 1600
+    colorType: 3
+  - priceGold: 1600
+    colorType: 4
+  - priceGold: 1600
+    colorType: 5
+  - priceGold: 1600
+    colorType: 6
+  - priceGold: 1600
+    colorType: 7
+  - priceGold: 1600
+    colorType: 8
+  - priceGold: 1600
+    colorType: 9
+  - priceGold: 1600
+    colorType: 10
+  - priceGold: 1600
+    colorType: 11
+  spoilers:
+  - indexInConfig: 15
+    priceGold: 1000
+    icon: {fileID: 21300000, guid: 551e223cf4c669545a37c4e29bb56f69, type: 3}
+  - indexInConfig: 14
+    priceGold: 2000
+    icon: {fileID: 21300000, guid: 7967507a39ed33c4899f872949ed2360, type: 3}
+  - indexInConfig: 13
+    priceGold: 3000
+    icon: {fileID: 21300000, guid: a8473648d52c08a459a33f3e8cc932c8, type: 3}
+  - indexInConfig: 12
+    priceGold: 4000
+    icon: {fileID: 21300000, guid: ddd5ad6ea6ff40e40b73520cd0715169, type: 3}
+  - indexInConfig: 10
+    priceGold: 5000
+    icon: {fileID: 21300000, guid: 386f0a818e55b5c4db18f4b2a0d49d7c, type: 3}
+  - indexInConfig: 8
+    priceGold: 6000
+    icon: {fileID: 21300000, guid: 50c45ae6388fc234d930140314a2f0d0, type: 3}
+  - indexInConfig: 5
+    priceGold: 7000
+    icon: {fileID: 21300000, guid: 29e7137f8a9f72d40a75e59c06e05bb3, type: 3}
+  - indexInConfig: 3
+    priceGold: 8000
+    icon: {fileID: 21300000, guid: 3bb3ae1b2c19fc24aa4f12eda42e295f, type: 3}
+  - indexInConfig: 2
+    priceGold: 9000
+    icon: {fileID: 21300000, guid: df65098998b739c439f9b646970b4b4f, type: 3}
+  neons:
+  - priceGold: 3700
+    neonMat: {fileID: 2100000, guid: b2b7947ec0d19d04faef027979a46d3b, type: 2}
+  - priceGold: 3700
+    neonMat: {fileID: 2100000, guid: 1fc758a7062a5ad4fb34d2e89dc8e613, type: 2}
+  - priceGold: 3700
+    neonMat: {fileID: 2100000, guid: e0bd1df67efea5449841e0c473a8f84f, type: 2}
+  - priceGold: 3700
+    neonMat: {fileID: 2100000, guid: 810a1a02114a53f4a80895b2ce2c86c8, type: 2}
+  - priceGold: 3700
+    neonMat: {fileID: 2100000, guid: 5a8bf0c127822fc4facf610a4741e265, type: 2}
+  - priceGold: 3700
+    neonMat: {fileID: 2100000, guid: 000555ebbd0fd784d88cf2a97dc0d901, type: 2}
+  - priceGold: 0
+    neonMat: {fileID: 2100000, guid: 462967c28496a734f88d0221f5ef22fc, type: 2}

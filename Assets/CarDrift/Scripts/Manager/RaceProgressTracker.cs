@@ -33,7 +33,7 @@ public class RaceProgressTracker : MonoSingleton<RaceProgressTracker>
     private class LapTrackData
     {
         public int completedLaps = 0;
-        public int currentTargetWpIdx = 1;
+        public int currentTargetWpIdx = 0;
         public int totalWaypointsPassed = 0;
         public bool canCompleteLap = false;
     }
@@ -137,14 +137,31 @@ public class RaceProgressTracker : MonoSingleton<RaceProgressTracker>
         var targetWp = waypointsContainer.waypoints[d.currentTargetWpIdx % wpCount];
         if (targetWp == null) return;
 
+        int prevWpIdx = (d.currentTargetWpIdx - 1 + wpCount) % wpCount;
+        var prevWp = waypointsContainer.waypoints[prevWpIdx];
+
+        float t = 0f;
+        if (prevWp != null)
+        {
+            Vector3 a = prevWp.transform.position;
+            Vector3 b = targetWp.transform.position;
+            Vector3 ab = b - a;
+            float segLenSq = ab.sqrMagnitude;
+            if (segLenSq > 0.0001f)
+            {
+                t = Vector3.Dot(carPos - a, ab) / segLenSq;
+            }
+        }
+
         float radius = (waypointsContainer != null && waypointsContainer.waypointRadius > 0) ? waypointsContainer.waypointRadius : playerWpPassDistance;
         float distSq = (carPos - targetWp.transform.position).sqrMagnitude;
-        float threshSq = radius * radius;
 
-        Vector3 toWp = targetWp.transform.position - carPos;
-        bool passedWpPlane = Vector3.Dot(carForward, toWp) < 0f && distSq < (threshSq * 3.24f);
+        // Vượt qua waypoint nếu:
+        // 1. Nằm trong bán kính
+        // 2. Hoặc hình chiếu trên trục đường đã vượt qua điểm đích (t >= 1.0) và xe không nằm quá xa tâm waypoint (distSq < 10000 = 100m)
+        bool passed = (distSq <= radius * radius) || (t >= 1.0f && distSq < 10000f);
 
-        if (distSq > threshSq && !passedWpPlane) return;
+        if (!passed) return;
 
         int passedIdx = d.currentTargetWpIdx % wpCount;
         d.currentTargetWpIdx = (passedIdx + 1) % wpCount;
@@ -203,7 +220,7 @@ public class RaceProgressTracker : MonoSingleton<RaceProgressTracker>
         outLaps = 0;
         outDistInLap = 0f;
 
-        if (wpCumDist == null || totalRaceDistance <= 0f)
+        if (wpCumDist == null || totalRaceDistance <= 0f || waypointsContainer == null || waypointsContainer.waypoints == null || wpCount < 2)
             return car.transform.position.z;
 
         Transform activeTransform = (car.carController != null) ? car.carController.transform : car.transform;
@@ -237,7 +254,25 @@ public class RaceProgressTracker : MonoSingleton<RaceProgressTracker>
 
         outDistInLap = CalcDistanceInLap(carPos, wpIdx);
 
-        return laps * totalLapDistance + outDistInLap;
+        int fromIdx = (wpIdx - 1 + wpCount) % wpCount;
+        var wpA = waypointsContainer.waypoints[fromIdx];
+        var wpB = waypointsContainer.waypoints[wpIdx];
+        float t = 0f;
+
+        if (wpA != null && wpB != null)
+        {
+            Vector3 a = wpA.transform.position;
+            Vector3 b = wpB.transform.position;
+            Vector3 ab = b - a;
+            float segLenSq = ab.sqrMagnitude;
+            if (segLenSq > 0.0001f)
+            {
+                t = Vector3.Dot(carPos - a, ab) / segLenSq;
+                t = Mathf.Clamp01(t);
+            }
+        }
+
+        return car.totalWaypointsPassed + t;
     }
 
     private void UpdateAllRanks()

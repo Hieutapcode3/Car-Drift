@@ -1,4 +1,4 @@
-﻿//----------------------------------------------
+//----------------------------------------------
 //        Realistic Car Controller Pro
 //
 // Copyright © 2014 - 2025 BoneCracker Games
@@ -18,10 +18,9 @@ using System.Collections.Generic;
 public class RCCP_UI_Color : RCCP_UIComponent {
 
     /// <summary>
-    /// Picked color.
+    /// Picked color type.
     /// </summary>
-    public PickedColor _pickedColor = PickedColor.Orange;
-    public enum PickedColor { Orange, Red, Green, Blue, Black, White, Cyan, Magenta, Pink }
+    public CarColorType colorType = CarColorType.Red;
 
     public void OnClick() {
 
@@ -40,47 +39,7 @@ public class RCCP_UI_Color : RCCP_UIComponent {
             return;
 
         //  Color.
-        Color selectedColor = new Color();
-
-        switch (_pickedColor) {
-
-            case PickedColor.Orange:
-                selectedColor = Color.red + (Color.green / 2f);
-                break;
-
-            case PickedColor.Red:
-                selectedColor = Color.red;
-                break;
-
-            case PickedColor.Green:
-                selectedColor = Color.green;
-                break;
-
-            case PickedColor.Blue:
-                selectedColor = Color.blue;
-                break;
-
-            case PickedColor.Black:
-                selectedColor = Color.black;
-                break;
-
-            case PickedColor.White:
-                selectedColor = Color.white;
-                break;
-
-            case PickedColor.Cyan:
-                selectedColor = Color.cyan;
-                break;
-
-            case PickedColor.Magenta:
-                selectedColor = Color.magenta;
-                break;
-
-            case PickedColor.Pink:
-                selectedColor = new Color(1, 0f, .5f);
-                break;
-
-        }
+        Color selectedColor = ColorParamSO.Instance != null ? ColorParamSO.Instance.GetColor(colorType) : Color.white;
 
         playerVehicle.Customizer.PaintManager.Paint(selectedColor);
 

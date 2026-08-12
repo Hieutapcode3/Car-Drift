@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Drift - Interactive Garage & Upgrade System Visualizer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #090a10;
+            --card-bg: rgba(20, 24, 38, 0.75);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --accent-cyan: #00f2fe;
+            --accent-blue: #4facfe;
+            --accent-purple: #7f00ff;
+            --gold: #ffb703;
+            --gold-glow: rgba(255, 183, 3, 0.4);
+            --silver: #e0e6ed;
+            --silver-glow: rgba(224, 230, 237, 0.3);
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --rank-s: linear-gradient(135deg, #ff007f, #7f00ff);
+            --rank-a: linear-gradient(135deg, #ffb703, #fb8500);
+            --rank-b: linear-gradient(135deg, #00f2fe, #4facfe);
+            --rank-c: linear-gradient(135deg, #10b981, #059669);
+            --rank-d: linear-gradient(135deg, #64748b, #475569);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 15% 20%, rgba(0, 242, 254, 0.08) 0%, transparent 45%),
+                radial-gradient(circle at 85% 80%, rgba(127, 0, 255, 0.1) 0%, transparent 50%);
+        }
+
+        /* HEADER & TOP BAR */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 40px;
+            background: rgba(15, 18, 28, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--card-border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-logo {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 900;
+            font-size: 22px;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
+        }
+
+        .brand-text h1 {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            background: linear-gradient(90deg, #fff, var(--text-muted));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-text p {
+            font-size: 12px;
+            color: var(--accent-cyan);
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* CURRENCY CONTAINER */
+        .currencies {
+            display: flex;
+            gap: 16px;
+        }
+
+        .currency-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 16px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .currency-badge.gold {
+            border-color: rgba(255, 183, 3, 0.3);
+            box-shadow: 0 0 15px rgba(255, 183, 3, 0.1);
+        }
+
+        .currency-badge.silver {
+            border-color: rgba(224, 230, 237, 0.3);
+            box-shadow: 0 0 15px rgba(224, 230, 237, 0.1);
+        }
+
+        .currency-icon {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 900;
+        }
+
+        .gold .currency-icon {
+            background: var(--gold);
+            color: #000;
+            box-shadow: 0 0 10px var(--gold-glow);
+        }
+
+        .silver .currency-icon {
+            background: var(--silver);
+            color: #000;
+            box-shadow: 0 0 10px var(--silver-glow);
+        }
+
+        .add-currency-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #fff;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .add-currency-btn:hover {
+            background: var(--accent-cyan);
+            color: #000;
+        }
+
+        /* MAIN CONTAINER */
+        .garage-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 420px;
+            gap: 24px;
+            padding: 30px 40px;
+            flex: 1;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* VIEWPORT / DISPLAY STAGE */
+        .car-stage-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .stage-header {
+            padding: 24px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .car-info h2 {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .rank-badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 900;
+            font-size: 14px;
+            letter-spacing: 1px;
+            color: #fff;
+            margin-left: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        /* CAR CANVAS VISUALIZER */
+        .stage-view {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            min-height: 340px;
+        }
+
+        .car-svg-preview {
+            width: 80%;
+            max-width: 550px;
+            filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.7));
+            transition: all 0.4s ease;
+        }
+
+        .neon-glow-effect {
+            position: absolute;
+            bottom: 70px;
+            width: 60%;
+            height: 35px;
+            border-radius: 50%;
+            background: var(--neon-color, transparent);
+            filter: blur(25px);
+            opacity: 0.85;
+            transition: background 0.4s ease;
+        }
+
+        /* NAV CAR BUTTONS */
+        .stage-nav {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            transform: translateY(-50%);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .nav-arrow-btn {
+            pointer-events: auto;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(20, 24, 38, 0.8);
+            border: 1px solid var(--card-border);
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+        }
+
+        .nav-arrow-btn:hover {
+            background: var(--accent-cyan);
+            color: #000;
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.5);
+            transform: scale(1.1);
+        }
+
+        /* CAR STATS BAR SECTION */
+        .stage-bottom {
+            padding: 24px 30px;
+            background: rgba(10, 12, 20, 0.6);
+            border-top: 1px solid var(--card-border);
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .stat-box {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-val-text {
+            font-size: 16px;
+            font-weight: 700;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .stat-bar-track {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .stat-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .stat-bar-bonus {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            background: var(--gold);
+            opacity: 0.8;
+            transition: all 0.5s ease;
+        }
+
+        /* RIGHT CONTROL PANEL (3 TABS) */
+        .panel-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        /* TAB SELECTOR HEADER */
+        .tab-menu {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            background: rgba(10, 12, 20, 0.7);
+            border-bottom: 1px solid var(--card-border);
+            padding: 8px;
+            gap: 6px;
+        }
+
+        .tab-btn {
+            padding: 12px 0;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            letter-spacing: 1px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, rgba(0, 242, 254, 0.15), rgba(127, 0, 255, 0.15));
+            color: #fff;
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            box-shadow: 0 4px 15px rgba(0, 242, 254, 0.1);
+        }
+
+        /* TAB CONTENT PANELS */
+        .tab-content {
+            padding: 24px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+            max-height: 520px;
+        }
+
+        .tab-panel {
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .tab-panel.active {
+            display: flex;
+        }
+
+        /* TAB 1: CAR SELECT UI */
+        .car-action-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            text-align: center;
+        }
+
+        .car-status-tag {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .btn-action {
+            padding: 14px 24px;
+            border-radius: 14px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 800;
+            font-size: 16px;
+            letter-spacing: 1px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-buy {
+            background: linear-gradient(135deg, var(--gold), #fb8500);
+            color: #000;
+            box-shadow: 0 0 20px var(--gold-glow);
+        }
+
+        .btn-buy:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px var(--gold-glow);
+        }
+
+        .btn-select {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+            color: #000;
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.3);
+        }
+
+        .btn-select:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(0, 242, 254, 0.5);
+        }
+
+        .btn-selected {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid #10b981;
+            color: #10b981;
+            cursor: default;
+        }
+
+        /* TAB 2: UPGRADE ITEM UI */
+        .upgrade-row {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .upgrade-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .upgrade-title {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .upgrade-lvl-badge {
+            background: rgba(0, 242, 254, 0.1);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .upgrade-pips {
+            display: flex;
+            gap: 6px;
+        }
+
+        .pip {
+            flex: 1;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .pip.active {
+            background: var(--accent-cyan);
+            box-shadow: 0 0 8px var(--accent-cyan);
+        }
+
+        .btn-upgrade {
+            padding: 10px 16px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border: 1px solid var(--card-border);
+            color: #fff;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .btn-upgrade:hover:not(:disabled) {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+            color: #000;
+            border-color: transparent;
+        }
+
+        .btn-upgrade:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* TAB 3: CUSTOM ITEM UI */
+        .custom-subtabs {
+            display: flex;
+            gap: 6px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 4px;
+            border-radius: 12px;
+        }
+
+        .subtab-btn {
+            flex: 1;
+            padding: 6px 0;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .subtab-btn.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .custom-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .custom-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .custom-card:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-2px);
+        }
+
+        .custom-card.selected {
+            border-color: var(--accent-cyan);
+            background: rgba(0, 242, 254, 0.1);
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
+        }
+
+        .color-swatch {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .item-price {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        /* ARCHITECTURE ARCH / SCRIPTABLE OBJECT INSPECTOR MODAL */
+        .so-architecture-section {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 24px;
+            margin-top: 10px;
+        }
+
+        .so-architecture-section h3 {
+            font-size: 18px;
+            margin-bottom: 14px;
+            color: var(--accent-cyan);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .so-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+        }
+
+        .so-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 13px;
+        }
+
+        .so-title {
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 6px;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .so-desc {
+            color: var(--text-muted);
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
+        /* ANIMATIONS */
+        @keyframes pulseGlow {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TOP HEADER & CURRENCY BAR -->
+    <header>
+        <div class="brand">
+            <div class="brand-logo">CD</div>
+            <div class="brand-text">
+                <h1>CAR DRIFT GARAGE</h1>
+                <p>Architecture & Data System Visualizer</p>
+            </div>
+        </div>
+
+        <div class="currencies">
+            <div class="currency-badge gold">
+                <div class="currency-icon">G</div>
+                <span id="goldVal">5,000</span>
+                <button class="add-currency-btn" onclick="addGold(1000)" title="Cộng 1000 Gold">+</button>
+            </div>
+            <div class="currency-badge silver">
+                <div class="currency-icon">S</div>
+                <span id="silverVal">10,000</span>
+                <button class="add-currency-btn" onclick="addSilver(2000)" title="Cộng 2000 Silver">+</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN GARAGE INTERFACE -->
+    <div class="garage-wrapper">
+        
+        <!-- LEFT: 3D VIEWPORT & STATS -->
+        <div class="car-stage-card">
+            
+            <div class="stage-header">
+                <div class="car-info">
+                    <h2 id="carName">Drift King GT</h2>
+                    <span id="carRankBadge" class="rank-badge" style="background: var(--rank-s)">RANK S</span>
+                </div>
+            </div>
+
+            <!-- VISUAL CAR STAGE PREVIEW -->
+            <div class="stage-view">
+                <div class="stage-nav">
+                    <button class="nav-arrow-btn" onclick="prevCar()">&#10094;</button>
+                    <button class="nav-arrow-btn" onclick="nextCar()">&#10095;</button>
+                </div>
+
+                <!-- CAR SVG INTERACTIVE ARTWORK -->
+                <svg class="car-svg-preview" viewBox="0 0 500 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- CAR SHADOW -->
+                    <ellipse cx="250" cy="175" rx="210" ry="15" fill="rgba(0,0,0,0.6)" />
+
+                    <!-- SPOILER -->
+                    <g id="spoilerGroup" style="display: block;">
+                        <path id="spoilerMesh" d="M60 75 L100 75 L95 60 L50 60 Z" fill="#222" stroke="#444" stroke-width="2"/>
+                    </g>
+
+                    <!-- CAR BODY -->
+                    <path id="carBody" d="M70 145 C60 145 50 135 55 115 L90 100 L160 70 L300 70 L390 100 L440 115 C455 120 455 145 430 145 Z" fill="#00f2fe" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+
+                    <!-- WINDOWS / CABIN -->
+                    <path d="M165 75 L210 40 L310 40 L340 75 Z" fill="rgba(15, 23, 42, 0.85)" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>
+
+                    <!-- HEADLIGHTS / TAILLIGHTS -->
+                    <path d="M430 120 L445 122 L440 130 Z" fill="#00f2fe" />
+                    <path d="M55 120 L50 122 L52 130 Z" fill="#ff0055" />
+
+                    <!-- WHEELS -->
+                    <g id="wheelFront">
+                        <circle cx="370" cy="145" r="28" fill="#111" stroke="#333" stroke-width="6"/>
+                        <circle id="wheelFrontRim" cx="370" cy="145" r="16" fill="none" stroke="#fff" stroke-width="4" stroke-dasharray="6,4"/>
+                    </g>
+
+                    <g id="wheelRear">
+                        <circle cx="130" cy="145" r="28" fill="#111" stroke="#333" stroke-width="6"/>
+                        <circle id="wheelRearRim" cx="130" cy="145" r="16" fill="none" stroke="#fff" stroke-width="4" stroke-dasharray="6,4"/>
+                    </g>
+                </svg>
+
+                <!-- NEON LIGHT GLOW UNDER CAR -->
+                <div id="neonGlow" class="neon-glow-effect"></div>
+            </div>
+
+            <!-- BOTTOM STATS BARS -->
+            <div class="stage-bottom">
+                <div class="stat-box">
+                    <span class="stat-label">Max Speed</span>
+                    <span id="speedValText" class="stat-val-text">220 km/h</span>
+                    <div class="stat-bar-track">
+                        <div id="speedBarFill" class="stat-bar-fill"></div>
+                        <div id="speedBarBonus" class="stat-bar-bonus"></div>
+                    </div>
+                </div>
+
+                <div class="stat-box">
+                    <span class="stat-label">Torque</span>
+                    <span id="torqueValText" class="stat-val-text">350 Nm</span>
+                    <div class="stat-bar-track">
+                        <div id="torqueBarFill" class="stat-bar-fill"></div>
+                        <div id="torqueBarBonus" class="stat-bar-bonus"></div>
+                    </div>
+                </div>
+
+                <div class="stat-box">
+                    <span class="stat-label">Brake</span>
+                    <span id="brakeValText" class="stat-val-text">2500 N</span>
+                    <div class="stat-bar-track">
+                        <div id="brakeBarFill" class="stat-bar-fill"></div>
+                        <div id="brakeBarBonus" class="stat-bar-bonus"></div>
+                    </div>
+                </div>
+
+                <div class="stat-box">
+                    <span class="stat-label">Handling</span>
+                    <span id="handlingValText" class="stat-val-text">1.2</span>
+                    <div class="stat-bar-track">
+                        <div id="handlingBarFill" class="stat-bar-fill"></div>
+                        <div id="handlingBarBonus" class="stat-bar-bonus"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT: MENU TABS PANEL -->
+        <div class="panel-card">
+            
+            <div class="tab-menu">
+                <button class="tab-btn active" onclick="switchTab('car')">CAR</button>
+                <button class="tab-btn" onclick="switchTab('upgrade')">UPGRADE</button>
+                <button class="tab-btn" onclick="switchTab('custom')">CUSTOM</button>
+            </div>
+
+            <div class="tab-content">
+                
+                <!-- TAB 1: CAR PANEL -->
+                <div id="panelCar" class="tab-panel active">
+                    <div class="car-action-card">
+                        <div id="carStatusText" class="car-status-tag">Đã sở hữu xe này</div>
+                        <button id="carActionButton" class="btn-action btn-select" onclick="handleCarAction()">SELECT CAR</button>
+                    </div>
+
+                    <div style="font-size: 13px; color: var(--text-muted); line-height: 1.6; background: rgba(0,0,0,0.2); padding: 14px; border-radius: 12px;">
+                        💡 <strong>Lưu ý:</strong> Xe index 0 (Drift King GT) luôn mở khóa mặc định. Người chơi có thể sử dụng Gold để mua mở khóa các xe mạnh hơn!
+                    </div>
+                </div>
+
+                <!-- TAB 2: UPGRADE PANEL (Engine, Handling, Brake, Speed) -->
+                <div id="panelUpgrade" class="tab-panel">
+                    
+                    <!-- ENGINE UPGRADE -->
+                    <div class="upgrade-row">
+                        <div class="upgrade-header">
+                            <span class="upgrade-title">🚀 Engine (Động cơ)</span>
+                            <span id="engineLvlBadge" class="upgrade-lvl-badge">LV 0/5</span>
+                        </div>
+                        <div id="enginePips" class="upgrade-pips"></div>
+                        <button id="btnUpgradeEngine" class="btn-upgrade" onclick="upgradeStat('engine')">
+                            <span>UPGRADE</span>
+                            <span id="costEngineText">500G + 1000S</span>
+                        </button>
+                    </div>
+
+                    <!-- HANDLING UPGRADE -->
+                    <div class="upgrade-row">
+                        <div class="upgrade-header">
+                            <span class="upgrade-title">🎯 Handling (Lái/Bám đường)</span>
+                            <span id="handlingLvlBadge" class="upgrade-lvl-badge">LV 0/5</span>
+                        </div>
+                        <div id="handlingPips" class="upgrade-pips"></div>
+                        <button id="btnUpgradeHandling" class="btn-upgrade" onclick="upgradeStat('handling')">
+                            <span>UPGRADE</span>
+                            <span id="costHandlingText">500G + 1000S</span>
+                        </button>
+                    </div>
+
+                    <!-- BRAKE UPGRADE -->
+                    <div class="upgrade-row">
+                        <div class="upgrade-header">
+                            <span class="upgrade-title">🛑 Brake (Phanh xe)</span>
+                            <span id="brakeLvlBadge" class="upgrade-lvl-badge">LV 0/5</span>
+                        </div>
+                        <div id="brakePips" class="upgrade-pips"></div>
+                        <button id="btnUpgradeBrake" class="btn-upgrade" onclick="upgradeStat('brake')">
+                            <span>UPGRADE</span>
+                            <span id="costBrakeText">500G + 1000S</span>
+                        </button>
+                    </div>
+
+                    <!-- SPEED UPGRADE -->
+                    <div class="upgrade-row">
+                        <div class="upgrade-header">
+                            <span class="upgrade-title">⚡ Speed (Tốc độ tối đa)</span>
+                            <span id="speedLvlBadge" class="upgrade-lvl-badge">LV 0/5</span>
+                        </div>
+                        <div id="speedPips" class="upgrade-pips"></div>
+                        <button id="btnUpgradeSpeed" class="btn-upgrade" onclick="upgradeStat('speed')">
+                            <span>UPGRADE</span>
+                            <span id="costSpeedText">500G + 1000S</span>
+                        </button>
+                    </div>
+
+                </div>
+
+                <!-- TAB 3: CUSTOM PANEL (Paint, Wheels, Spoiler, Neon) -->
+                <div id="panelCustom" class="tab-panel">
+                    
+                    <div class="custom-subtabs">
+                        <button class="subtab-btn active" onclick="switchCustomSubtab('paint')">Paint</button>
+                        <button class="subtab-btn" onclick="switchCustomSubtab('wheels')">Wheels</button>
+                        <button class="subtab-btn" onclick="switchCustomSubtab('spoiler')">Spoiler</button>
+                        <button class="subtab-btn" onclick="switchCustomSubtab('neon')">Neon</button>
+                    </div>
+
+                    <!-- CUSTOM SUBTAB GRID CONTENT -->
+                    <div id="customGrid" class="custom-grid"></div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- SCRIPTABLE OBJECT & CODE ARCHITECTURE OVERVIEW -->
+    <div style="max-width: 1600px; margin: 0 auto 40px auto; padding: 0 40px; width: 100%;">
+        <div class="so-architecture-section">
+            <h3>🏗️ Cấu Trúc Dữ Liệu & Unity Code Managers</h3>
+            
+            <div class="so-grid">
+                <div class="so-card">
+                    <div class="so-title">📄 CarDataSO</div>
+                    <div class="so-desc">ScriptableObject chứa CarID, Tên xe, Prefab RCCP, Icon, Rank (D..S), Giá mua Gold và Cờ UnlockedByDefault.</div>
+                </div>
+
+                <div class="so-card">
+                    <div class="so-title">⚙️ UpgradeConfigSO</div>
+                    <div class="so-desc">Định nghĩa 5 Level cho Engine, Handling, Brake, Speed. Mỗi level quy định chi phí <strong>Gold + Silver</strong> và chỉ số Stat Bonus.</div>
+                </div>
+
+                <div class="so-card">
+                    <div class="so-title">🎨 CustomConfigSO</div>
+                    <div class="so-desc">Chứa mảng thông số và giá <strong>Gold</strong> cho từng tùy chỉnh ngoại thất: Paint, Wheels, Spoiler, Neon.</div>
+                </div>
+
+                <div class="so-card">
+                    <div class="so-title">💾 CarSaveManager</div>
+                    <div class="so-desc">Quản lý PlayerPrefs theo Key từng xe riêng biệt (`Car_car_0_Engine_Level`, `Car_car_0_Paint_Index`...).</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC DYNAMICS -->
+    <script>
+        // DATA MODEL MOCKUP
+        let player = {
+            gold: 5000,
+            silver: 10000,
+            selectedCarIndex: 0
+        };
+
+        const carsData = [
+            {
+                id: "car_0",
+                name: "Drift King GT",
+                rank: "S",
+                rankGradient: "var(--rank-s)",
+                unlockCostGold: 0,
+                unlocked: true,
+                baseStats: { speed: 200, torque: 350, brake: 2500, handling: 1.2 },
+                upgrades: { engine: 0, handling: 0, brake: 0, speed: 0 },
+                customs: { paint: 0, wheels: 0, spoiler: 0, neon: 0 }
+            },
+            {
+                id: "car_1",
+                name: "Apex Spec-R",
+                rank: "A",
+                rankGradient: "var(--rank-a)",
+                unlockCostGold: 1500,
+                unlocked: false,
+                baseStats: { speed: 170, torque: 280, brake: 2000, handling: 1.0 },
+                upgrades: { engine: 0, handling: 0, brake: 0, speed: 0 },
+                customs: { paint: 1, wheels: 1, spoiler: 0, neon: 1 }
+            },
+            {
+                id: "car_2",
+                name: "Phantom Hyper",
+                rank: "SS",
+                rankGradient: "linear-gradient(135deg, #00f2fe, #ff007f)",
+                unlockCostGold: 3500,
+                unlocked: false,
+                baseStats: { speed: 240, torque: 420, brake: 3000, handling: 1.5 },
+                upgrades: { engine: 0, handling: 0, brake: 0, speed: 0 },
+                customs: { paint: 2, wheels: 2, spoiler: 1, neon: 2 }
+            }
+        ];
+
+        const customOptions = {
+            paint: [
+                { name: "Cyan Cyber", color: "#00f2fe", price: 0 },
+                { name: "Neon Pink", color: "#ff007f", price: 300 },
+                { name: "Gold Dust", color: "#ffb703", price: 500 },
+                { name: "Emerald Green", color: "#10b981", price: 300 },
+                { name: "Royal Purple", color: "#7f00ff", price: 400 },
+                { name: "Dark Carbon", color: "#1e293b", price: 600 }
+            ],
+            wheels: [
+                { name: "Stock Rims", color: "#ffffff", price: 0 },
+                { name: "Sport Chrome", color: "#00f2fe", price: 400 },
+                { name: "Drift Bronze", color: "#ffb703", price: 600 }
+            ],
+            spoiler: [
+                { name: "No Spoiler", active: false, price: 0 },
+                { name: "GT Wing Carbon", active: true, price: 500 }
+            ],
+            neon: [
+                { name: "No Neon", color: "transparent", price: 0 },
+                { name: "Cyan Glow", color: "#00f2fe", price: 400 },
+                { name: "Pink Glow", color: "#ff007f", price: 400 },
+                { name: "Purple Glow", color: "#7f00ff", price: 400 }
+            ]
+        };
+
+        let currentCarIdx = 0;
+        let currentCustomTab = "paint";
+
+        // INITIALIZE
+        window.onload = () => {
+            updateUI();
+        };
+
+        function addGold(amt) {
+            player.gold += amt;
+            updateUI();
+        }
+
+        function addSilver(amt) {
+            player.silver += amt;
+            updateUI();
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+
+            event.target.classList.add('active');
+            if (tabName === 'car') document.getElementById('panelCar').classList.add('active');
+            if (tabName === 'upgrade') document.getElementById('panelUpgrade').classList.add('active');
+            if (tabName === 'custom') {
+                document.getElementById('panelCustom').classList.add('active');
+                renderCustomGrid();
+            }
+        }
+
+        function switchCustomSubtab(sub) {
+            currentCustomTab = sub;
+            document.querySelectorAll('.subtab-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            renderCustomGrid();
+        }
+
+        function prevCar() {
+            currentCarIdx = (currentCarIdx - 1 + carsData.length) % carsData.length;
+            updateUI();
+        }
+
+        function nextCar() {
+            currentCarIdx = (currentCarIdx + 1) % carsData.length;
+            updateUI();
+        }
+
+        function updateUI() {
+            const car = carsData[currentCarIdx];
+
+            // Currency
+            document.getElementById('goldVal').innerText = player.gold.toLocaleString();
+            document.getElementById('silverVal').innerText = player.silver.toLocaleString();
+
+            // Car Info Header
+            document.getElementById('carName').innerText = car.name;
+            const rankBadge = document.getElementById('carRankBadge');
+            rankBadge.innerText = `RANK ${car.rank}`;
+            rankBadge.style.background = car.rankGradient;
+
+            // Car Visual Preview
+            document.getElementById('carBody').setAttribute('fill', customOptions.paint[car.customs.paint].color);
+            document.getElementById('wheelFrontRim').setAttribute('stroke', customOptions.wheels[car.customs.wheels].color);
+            document.getElementById('wheelRearRim').setAttribute('stroke', customOptions.wheels[car.customs.wheels].color);
+            document.getElementById('spoilerGroup').style.display = customOptions.spoiler[car.customs.spoiler].active ? 'block' : 'none';
+            document.getElementById('neonGlow').style.setProperty('--neon-color', customOptions.neon[car.customs.neon].color);
+
+            // Car Action Card Button
+            const statusText = document.getElementById('carStatusText');
+            const actionBtn = document.getElementById('carActionButton');
+
+            if (!car.unlocked) {
+                statusText.innerText = `Chưa mở khóa (Giá: ${car.unlockCostGold} Gold)`;
+                actionBtn.className = "btn-action btn-buy";
+                actionBtn.innerText = `BUY FOR ${car.unlockCostGold} GOLD`;
+            } else if (player.selectedCarIndex === currentCarIdx) {
+                statusText.innerText = "Chiếc xe này đang được chọn";
+                actionBtn.className = "btn-action btn-selected";
+                actionBtn.innerText = "SELECTED FOR RACE";
+            } else {
+                statusText.innerText = "Đã mở khóa";
+                actionBtn.className = "btn-action btn-select";
+                actionBtn.innerText = "SELECT CAR";
+            }
+
+            // Stats Bars Calculation (Base + Upgrades)
+            const speedTotal = car.baseStats.speed + (car.upgrades.speed * 10);
+            const torqueTotal = car.baseStats.torque + (car.upgrades.engine * 20);
+            const brakeTotal = car.baseStats.brake + (car.upgrades.brake * 200);
+            const handlingTotal = car.baseStats.handling + (car.upgrades.handling * 0.1);
+
+            document.getElementById('speedValText').innerText = `${speedTotal} km/h`;
+            document.getElementById('torqueValText').innerText = `${torqueTotal} Nm`;
+            document.getElementById('brakeValText').innerText = `${brakeTotal} N`;
+            document.getElementById('handlingValText').innerText = handlingTotal.toFixed(1);
+
+            document.getElementById('speedBarFill').style.width = `${(speedTotal / 300) * 100}%`;
+            document.getElementById('torqueBarFill').style.width = `${(torqueTotal / 500) * 100}%`;
+            document.getElementById('brakeBarFill').style.width = `${(brakeTotal / 4000) * 100}%`;
+            document.getElementById('handlingBarFill').style.width = `${(handlingTotal / 2.0) * 100}%`;
+
+            // Upgrade Tab Rows Update
+            updateUpgradeRow('engine', car.upgrades.engine);
+            updateUpgradeRow('handling', car.upgrades.handling);
+            updateUpgradeRow('brake', car.upgrades.brake);
+            updateUpgradeRow('speed', car.upgrades.speed);
+
+            if (document.getElementById('panelCustom').classList.contains('active')) {
+                renderCustomGrid();
+            }
+        }
+
+        function handleCarAction() {
+            const car = carsData[currentCarIdx];
+            if (!car.unlocked) {
+                if (player.gold >= car.unlockCostGold) {
+                    player.gold -= car.unlockCostGold;
+                    car.unlocked = true;
+                    player.selectedCarIndex = currentCarIdx;
+                    updateUI();
+                } else {
+                    alert("Không đủ Gold để mua xe này!");
+                }
+            } else {
+                player.selectedCarIndex = currentCarIdx;
+                updateUI();
+            }
+        }
+
+        function updateUpgradeRow(statKey, lvl) {
+            const badge = document.getElementById(`${statKey}LvlBadge`);
+            const pipsContainer = document.getElementById(`${statKey}Pips`);
+            const costTxt = document.getElementById(`cost${statKey.charAt(0).toUpperCase() + statKey.slice(1)}Text`);
+            const btn = document.getElementById(`btnUpgrade${statKey.charAt(0).toUpperCase() + statKey.slice(1)}`);
+
+            badge.innerText = `LV ${lvl}/5`;
+
+            // Render Pips
+            let pipsHTML = '';
+            for (let i = 1; i <= 5; i++) {
+                pipsHTML += `<div class="pip ${i <= lvl ? 'active' : ''}"></div>`;
+            }
+            pipsContainer.innerHTML = pipsHTML;
+
+            // Cost & Button
+            if (lvl >= 5) {
+                costTxt.innerText = "MAX LEVEL";
+                btn.disabled = true;
+            } else {
+                const goldCost = (lvl + 1) * 500;
+                const silverCost = (lvl + 1) * 1000;
+                costTxt.innerText = `${goldCost}G + ${silverCost}S`;
+                
+                const canAfford = player.gold >= goldCost && player.silver >= silverCost;
+                btn.disabled = !canAfford || !carsData[currentCarIdx].unlocked;
+            }
+        }
+
+        function upgradeStat(statKey) {
+            const car = carsData[currentCarIdx];
+            if (!car.unlocked) return;
+            const lvl = car.upgrades[statKey];
+            if (lvl >= 5) return;
+
+            const goldCost = (lvl + 1) * 500;
+            const silverCost = (lvl + 1) * 1000;
+
+            if (player.gold >= goldCost && player.silver >= silverCost) {
+                player.gold -= goldCost;
+                player.silver -= silverCost;
+                car.upgrades[statKey]++;
+                updateUI();
+            }
+        }
+
+        function renderCustomGrid() {
+            const grid = document.getElementById('customGrid');
+            grid.innerHTML = '';
+            const car = carsData[currentCarIdx];
+            const items = customOptions[currentCustomTab];
+
+            items.forEach((item, idx) => {
+                const card = document.createElement('div');
+                card.className = `custom-card ${car.customs[currentCustomTab] === idx ? 'selected' : ''}`;
+                
+                let previewContent = '';
+                if (currentCustomTab === 'paint' || currentCustomTab === 'neon') {
+                    previewContent = `<div class="color-swatch" style="background: ${item.color}"></div>`;
+                } else if (currentCustomTab === 'wheels') {
+                    previewContent = `<div class="color-swatch" style="background: ${item.color}"></div>`;
+                } else {
+                    previewContent = `<div style="font-size:20px;">🏎️</div>`;
+                }
+
+                card.innerHTML = `
+                    ${previewContent}
+                    <span style="font-size:12px; font-weight:700;">${item.name}</span>
+                    <span class="item-price">${item.price === 0 ? 'Miễn phí' : item.price + ' Gold'}</span>
+                `;
+
+                card.onclick = () => {
+                    if (car.customs[currentCustomTab] !== idx) {
+                        if (item.price > 0 && car.customs[currentCustomTab] !== idx) {
+                            if (player.gold >= item.price) {
+                                player.gold -= item.price;
+                                car.customs[currentCustomTab] = idx;
+                                updateUI();
+                            } else {
+                                alert("Không đủ Gold!");
+                            }
+                        } else {
+                            car.customs[currentCustomTab] = idx;
+                            updateUI();
+                        }
+                    }
+                };
+
+                grid.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>

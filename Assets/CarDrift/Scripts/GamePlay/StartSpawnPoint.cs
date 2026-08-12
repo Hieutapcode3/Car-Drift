@@ -6,7 +6,7 @@ using UnityEngine;
 public class EnemySpawnConfig
 {
     public string name = "Enemy Spawn";
-    public CarType carType = CarType.Truck;
+    public CarType carType = CarType.M3_E46;
     public AIDifficulty aiDifficulty = AIDifficulty.Medium;
     public Transform spawnTransform;
 }
@@ -14,7 +14,7 @@ public class EnemySpawnConfig
 public class StartSpawnPoint : MonoBehaviour
 {
     [Header("Player Settings")]
-    public CarType playerCarType = CarType.Truck;
+    public CarType playerCarType = CarType.M3_E46;
     public Transform playerSpawnTransform;
 
     [Header("Enemy Spawn Settings")]
