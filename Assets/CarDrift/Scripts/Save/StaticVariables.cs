@@ -120,14 +120,11 @@ namespace VTLTools
         public bool isSoundOn;
         public bool isMusicOn;
         public bool isVibrationOn;
-
-        private int presetIndex;
         public UserData()
         {
             isSoundOn = true;
             isMusicOn = true;
             isVibrationOn = true;
-            presetIndex = 0;
         }
 
         public override string ToString()
@@ -135,8 +132,7 @@ namespace VTLTools
             return $"userData: \n" +
                    $"isSoundOn: {isSoundOn}\n" +
                    $"isMusicOn: {isMusicOn}\n" +
-                   $"isVibrationOn: {isVibrationOn}\n" +
-                   $"presetIndex: {presetIndex}\n";
+                   $"isVibrationOn: {isVibrationOn}\n";
         }
 
         #region Coins

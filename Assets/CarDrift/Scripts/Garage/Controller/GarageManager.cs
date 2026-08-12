@@ -252,6 +252,7 @@ public class GarageManager : MonoSingleton<GarageManager>
 
         if (CurrencyManager.SpendGold(priceGold))
         {
+            CarSaveManager.UnlockCustom(type, itemIndex);
             CarSaveManager.SetCustomIndex(id, type, itemIndex);
             ApplySavedUpgradesAndCustoms(data);
             return true;

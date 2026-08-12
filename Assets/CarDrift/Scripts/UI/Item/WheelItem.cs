@@ -8,6 +8,7 @@ public class WheelItem : MonoBehaviour
     [SerializeField] private TextMeshProUGUI amountTxt;
     [SerializeField] private UIButton selectBtn;
     [SerializeField] private UIButton buyBtn;
+    [SerializeField] private TextMeshProUGUI selectTxt;
 
     public void Init(WheelCustomItem itemData, int index)
     {
@@ -22,8 +23,46 @@ public class WheelItem : MonoBehaviour
             amountTxt.text = itemData.priceGold.FormatNumber();
         }
 
+        string carID = GarageManager.Instance != null && GarageManager.Instance.CurrentCarData != null ? GarageManager.Instance.CurrentCarData.carID : "";
+        bool isUnlocked = CarSaveManager.IsCustomUnlocked(CustomType.Wheels, index, itemData.priceGold);
+        int equippedIndex = CarSaveManager.GetCustomIndex(carID, CustomType.Wheels);
+        bool isEquipped = (equippedIndex == index) || (equippedIndex == -1 && index == 0);
+
+        if (buyBtn != null)
+        {
+            buyBtn.gameObject.SetActive(!isUnlocked);
+        }
+
+        if (selectBtn != null)
+        {
+            selectBtn.gameObject.SetActive(isUnlocked);
+            SetButtonInteractable(selectBtn, isUnlocked && !isEquipped);
+        }
+
+        if (selectTxt != null)
+        {
+            selectTxt.text = isEquipped ? "Selected" : "Select";
+        }
+
         SetupButton(selectBtn, index, isBuy: false);
         SetupButton(buyBtn, index, isBuy: true);
+    }
+
+    private void SetButtonInteractable(UIButton btn, bool interactable)
+    {
+        if (btn == null) return;
+        Selectable sel = btn.GetComponent<Selectable>();
+        if (sel != null)
+        {
+            sel.interactable = interactable;
+        }
+        else
+        {
+            CanvasGroup cg = btn.GetComponent<CanvasGroup>();
+            if (cg == null) cg = btn.gameObject.AddComponent<CanvasGroup>();
+            cg.interactable = interactable;
+            cg.blocksRaycasts = interactable;
+        }
     }
 
     private void SetupButton(UIButton btn, int index, bool isBuy)
@@ -59,6 +98,7 @@ public class WheelItem : MonoBehaviour
                 if (currentCar != null)
                 {
                     CarSaveManager.SetCustomIndex(currentCar.carID, CustomType.Wheels, index);
+                    GarageManager.Instance.ApplySavedUpgradesAndCustoms(currentCar);
                 }
             });
         }

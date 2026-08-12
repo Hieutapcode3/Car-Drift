@@ -8,6 +8,7 @@ public class SpoilerItem : MonoBehaviour
     [SerializeField] private TextMeshProUGUI amountTxt;
     [SerializeField] private UIButton selectBtn;
     [SerializeField] private UIButton buyBtn;
+    [SerializeField] private TextMeshProUGUI selectTxt;
 
     public void Init(SpoilerCustomItem itemData, int indexInConfig)
     {
@@ -22,8 +23,46 @@ public class SpoilerItem : MonoBehaviour
             amountTxt.text = itemData.priceGold.FormatNumber();
         }
 
+        string carID = GarageManager.Instance != null && GarageManager.Instance.CurrentCarData != null ? GarageManager.Instance.CurrentCarData.carID : "";
+        bool isUnlocked = CarSaveManager.IsCustomUnlocked(CustomType.Spoiler, indexInConfig, itemData.priceGold);
+        int equippedIndex = CarSaveManager.GetCustomIndex(carID, CustomType.Spoiler);
+        bool isEquipped = (equippedIndex == indexInConfig) || (equippedIndex == -1 && indexInConfig == 0);
+
+        if (buyBtn != null)
+        {
+            buyBtn.gameObject.SetActive(!isUnlocked);
+        }
+
+        if (selectBtn != null)
+        {
+            selectBtn.gameObject.SetActive(isUnlocked);
+            SetButtonInteractable(selectBtn, isUnlocked && !isEquipped);
+        }
+
+        if (selectTxt != null)
+        {
+            selectTxt.text = isEquipped ? "Selected" : "Select";
+        }
+
         SetupButton(selectBtn, indexInConfig, isBuy: false);
         SetupButton(buyBtn, indexInConfig, isBuy: true);
+    }
+
+    private void SetButtonInteractable(UIButton btn, bool interactable)
+    {
+        if (btn == null) return;
+        Selectable sel = btn.GetComponent<Selectable>();
+        if (sel != null)
+        {
+            sel.interactable = interactable;
+        }
+        else
+        {
+            CanvasGroup cg = btn.GetComponent<CanvasGroup>();
+            if (cg == null) cg = btn.gameObject.AddComponent<CanvasGroup>();
+            cg.interactable = interactable;
+            cg.blocksRaycasts = interactable;
+        }
     }
 
     private void SetupButton(UIButton btn, int indexInConfig, bool isBuy)
@@ -59,6 +98,7 @@ public class SpoilerItem : MonoBehaviour
                 if (currentCar != null)
                 {
                     CarSaveManager.SetCustomIndex(currentCar.carID, CustomType.Spoiler, indexInConfig);
+                    GarageManager.Instance.ApplySavedUpgradesAndCustoms(currentCar);
                 }
             });
         }

@@ -693,6 +693,7 @@ MonoBehaviour:
   selectBtn: {fileID: 5679674233873648328}
   buyBtn: {fileID: 4971314384084787093}
   noColorImg: {fileID: 1186271715112065027}
+  selectTxt: {fileID: 3251519330447529842}
 --- !u!1 &6799836434378251923
 GameObject:
   m_ObjectHideFlags: 0

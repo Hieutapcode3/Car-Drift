@@ -1,8 +1,11 @@
+using System;
 using UnityEngine;
 
 public static class CarSaveManager
 {
     private const string KEY_SELECTED_CAR_INDEX = "Selected_Car_Index";
+
+    public static event Action OnCustomizationUpdated;
 
     public static int GetSelectedCarIndex()
     {
@@ -56,5 +59,26 @@ public static class CarSaveManager
         string key = $"Car_{carID}_{type}_Index";
         PlayerPrefs.SetInt(key, index);
         PlayerPrefs.Save();
+        NotifyCustomizationUpdated();
+    }
+
+    public static bool IsCustomUnlocked(CustomType type, int itemIndex, int priceGold = 0)
+    {
+        if (itemIndex <= 0 || priceGold <= 0) return true;
+        string key = $"Custom_{type}_{itemIndex}_Unlocked";
+        return PlayerPrefs.GetInt(key, 0) == 1;
+    }
+
+    public static void UnlockCustom(CustomType type, int itemIndex)
+    {
+        string key = $"Custom_{type}_{itemIndex}_Unlocked";
+        PlayerPrefs.SetInt(key, 1);
+        PlayerPrefs.Save();
+        NotifyCustomizationUpdated();
+    }
+
+    public static void NotifyCustomizationUpdated()
+    {
+        OnCustomizationUpdated?.Invoke();
     }
 }

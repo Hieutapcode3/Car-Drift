@@ -28,10 +28,12 @@ public class CustomPanel : Panel<CustomPanel>
     [SerializeField] private Button btnPaint;
 
     private Button currentSelectedBtn;
+    private CustomType currentCustomType = CustomType.Wheels;
 
     private void OnEnable()
     {
         CurrencyManager.OnCurrencyChanged += UpdateCurrencyUI;
+        CarSaveManager.OnCustomizationUpdated += RefreshCurrentTab;
         UpdateCurrencyUI(CurrencyManager.Gold, CurrencyManager.Silver);
 
         if (btnWheel != null) btnWheel.onClick.AddListener(() => SelectTab(btnWheel, CustomType.Wheels));
@@ -47,6 +49,12 @@ public class CustomPanel : Panel<CustomPanel>
     private void OnDisable()
     {
         CurrencyManager.OnCurrencyChanged -= UpdateCurrencyUI;
+        CarSaveManager.OnCustomizationUpdated -= RefreshCurrentTab;
+    }
+
+    private void RefreshCurrentTab()
+    {
+        OnSelectCustomType(currentCustomType);
     }
 
     private void UpdateCurrencyUI(int gold, int silver)
@@ -88,6 +96,8 @@ public class CustomPanel : Panel<CustomPanel>
 
     private void OnSelectCustomType(CustomType customType)
     {
+        currentCustomType = customType;
+
         if (itemContent != null)
         {
             foreach (Transform child in itemContent)

@@ -9,19 +9,26 @@ public class NeonItem : MonoBehaviour
     [SerializeField] private UIButton selectBtn;
     [SerializeField] private UIButton buyBtn;
     [SerializeField] private Image noColorImg;
+    [SerializeField] private TextMeshProUGUI selectTxt;
 
     public void Init(NeonCustomItem itemData, int indexInConfig)
     {
-        bool isFree = itemData.priceGold <= 0;
+        string carID = GarageManager.Instance != null && GarageManager.Instance.CurrentCarData != null ? GarageManager.Instance.CurrentCarData.carID : "";
+        bool isUnlocked = CarSaveManager.IsCustomUnlocked(CustomType.Neon, indexInConfig, itemData.priceGold);
+        int equippedIndex = CarSaveManager.GetCustomIndex(carID, CustomType.Neon);
+        bool isEquipped = (equippedIndex == indexInConfig) || (equippedIndex == -1 && indexInConfig == 0);
+
+        bool isNullItem = itemData.neonMat == null;
 
         if (noColorImg != null)
         {
-            noColorImg.gameObject.SetActive(isFree);
+            noColorImg.gameObject.SetActive(isNullItem);
         }
 
         if (colorImg != null)
         {
-            if (!isFree && itemData.neonMat != null)
+            colorImg.gameObject.SetActive(!isNullItem);
+            if (!isNullItem && itemData.neonMat != null)
             {
                 colorImg.color = itemData.neonMat.HasProperty("_BaseColor") ? itemData.neonMat.GetColor("_BaseColor") : itemData.neonMat.color;
             }
@@ -34,16 +41,39 @@ public class NeonItem : MonoBehaviour
 
         if (buyBtn != null)
         {
-            buyBtn.gameObject.SetActive(!isFree);
+            buyBtn.gameObject.SetActive(!isUnlocked);
         }
 
         if (selectBtn != null)
         {
-            selectBtn.gameObject.SetActive(isFree);
+            selectBtn.gameObject.SetActive(isUnlocked);
+            SetButtonInteractable(selectBtn, isUnlocked && !isEquipped);
+        }
+
+        if (selectTxt != null)
+        {
+            selectTxt.text = isEquipped ? "Selected" : "Select";
         }
 
         SetupButton(selectBtn, itemData, indexInConfig, isBuy: false);
         SetupButton(buyBtn, itemData, indexInConfig, isBuy: true);
+    }
+
+    private void SetButtonInteractable(UIButton btn, bool interactable)
+    {
+        if (btn == null) return;
+        Selectable sel = btn.GetComponent<Selectable>();
+        if (sel != null)
+        {
+            sel.interactable = interactable;
+        }
+        else
+        {
+            CanvasGroup cg = btn.GetComponent<CanvasGroup>();
+            if (cg == null) cg = btn.gameObject.AddComponent<CanvasGroup>();
+            cg.interactable = interactable;
+            cg.blocksRaycasts = interactable;
+        }
     }
 
     private void SetupButton(UIButton btn, NeonCustomItem itemData, int indexInConfig, bool isBuy)
@@ -81,6 +111,7 @@ public class NeonItem : MonoBehaviour
                 if (currentCar != null)
                 {
                     CarSaveManager.SetCustomIndex(currentCar.carID, CustomType.Neon, indexInConfig);
+                    GarageManager.Instance.ApplySavedUpgradesAndCustoms(currentCar);
                 }
             });
         }

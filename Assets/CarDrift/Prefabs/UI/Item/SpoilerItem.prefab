@@ -753,6 +753,7 @@ MonoBehaviour:
   amountTxt: {fileID: 412853183310778742}
   selectBtn: {fileID: 2976679733321197720}
   buyBtn: {fileID: 8027611182675820625}
+  selectTxt: {fileID: 5391974334044486331}
 --- !u!1 &7881663606064513057
 GameObject:
   m_ObjectHideFlags: 0
