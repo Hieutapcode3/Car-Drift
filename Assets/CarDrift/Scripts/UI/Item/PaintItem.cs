@@ -18,12 +18,18 @@ public class PaintItem : BaseCustomItem
             colorImg.color = itemData.color;
         }
 
-        // Setup preview listeners on both buttons (RemoveAll + add preview)
-        SetupPreviewListener(buyBtn, itemData.colorType);
-        SetupPreviewListener(selectBtn, itemData.colorType);
+        // Cleanup RCCP_UI_Color component from buyBtn if present
+        if (buyBtn != null)
+        {
+            RCCP_UI_Color oldComp = buyBtn.GetComponent<RCCP_UI_Color>();
+            if (oldComp != null) Destroy(oldComp);
+        }
 
         // Common init: sets amountTxt, adds buy/select listeners, calls RefreshState
         InitBase(indexInConfig, itemData.priceGold);
+
+        // Setup preview listener on selectBtn only (not buyBtn)
+        SetupPreviewListener(selectBtn, itemData.colorType);
     }
 
     private void SetupPreviewListener(UIButton btn, CarColorType colorType)
@@ -37,7 +43,6 @@ public class PaintItem : BaseCustomItem
         }
         rccpColor.colorType = colorType;
 
-        btn.onPress.RemoveAllListeners();
         btn.onPress.AddListener(rccpColor.OnClick);
     }
 }

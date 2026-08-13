@@ -65,26 +65,49 @@ public abstract class BaseCustomItem : MonoBehaviour
     {
         if (buyBtn != null)
         {
-            buyBtn.onPress.AddListener(() =>
-            {
-                if (GarageManager.Instance != null)
-                {
-                    GarageManager.Instance.CustomCurrentCar(GetCustomType(), itemIndex);
-                }
-            });
+            buyBtn.onPress.RemoveAllListeners();
+            buyBtn.onPress.AddListener(OnBuyBtnClick);
         }
 
         if (selectBtn != null)
         {
-            selectBtn.onPress.AddListener(() =>
+            selectBtn.onPress.AddListener(OnSelectBtnClick);
+        }
+    }
+
+    protected virtual void OnBuyBtnClick()
+    {
+        if (!CurrencyManager.HasEnoughGold(cachedPriceGold))
+        {
+            Debug.LogWarning($"Không đủ tiền: Cần {cachedPriceGold} Gold, hiện có {CurrencyManager.Gold} Gold.");
+            return;
+        }
+
+        if (GarageManager.Instance != null)
+        {
+            bool success = GarageManager.Instance.CustomCurrentCar(GetCustomType(), itemIndex);
+            if (success)
             {
-                CarDataSO currentCar = GarageManager.Instance != null ? GarageManager.Instance.CurrentCarData : null;
-                if (currentCar != null)
-                {
-                    CarSaveManager.SetCustomIndex(currentCar.carID, GetCustomType(), itemIndex);
-                    GarageManager.Instance.ApplySavedUpgradesAndCustoms(currentCar);
-                }
-            });
+                RefreshState();
+            }
+            else
+            {
+                Debug.LogWarning($"Không thể mua item (Xe chưa mở khóa hoặc lỗi cấu hình).");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("GarageManager.Instance is null!");
+        }
+    }
+
+    protected virtual void OnSelectBtnClick()
+    {
+        CarDataSO currentCar = GarageManager.Instance != null ? GarageManager.Instance.CurrentCarData : null;
+        if (currentCar != null)
+        {
+            CarSaveManager.SetCustomIndex(currentCar.carID, GetCustomType(), itemIndex);
+            GarageManager.Instance.ApplySavedUpgradesAndCustoms(currentCar);
         }
     }
 }

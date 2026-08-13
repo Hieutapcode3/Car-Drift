@@ -77,6 +77,18 @@ public static class CurrencyManager
         return true;
     }
 
+    public static void SetGold(int amount)
+    {
+        Gold = Mathf.Max(0, amount);
+        SaveCurrency();
+    }
+
+    public static void SetSilver(int amount)
+    {
+        Silver = Mathf.Max(0, amount);
+        SaveCurrency();
+    }
+
     public static void AddGold(int amount)
     {
         if (amount <= 0) return;

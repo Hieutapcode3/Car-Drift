@@ -29,19 +29,17 @@ public class NeonItem : BaseCustomItem
             }
         }
 
-        // Setup preview listeners on both buttons (RemoveAll + add neon preview)
-        SetupPreviewListener(buyBtn, itemData);
-        SetupPreviewListener(selectBtn, itemData);
-
         // Common init: sets amountTxt, adds buy/select listeners, calls RefreshState
         InitBase(indexInConfig, itemData.priceGold);
+
+        // Setup preview listener on selectBtn only (not buyBtn)
+        SetupPreviewListener(selectBtn, itemData);
     }
 
     private void SetupPreviewListener(UIButton btn, NeonCustomItem itemData)
     {
         if (btn == null) return;
 
-        btn.onPress.RemoveAllListeners();
         btn.onPress.AddListener(() =>
         {
             RCCP_CarController playerVehicle = RCCP_SceneManager.Instance != null ? RCCP_SceneManager.Instance.activePlayerVehicle : null;

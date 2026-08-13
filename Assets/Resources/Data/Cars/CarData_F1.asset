@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b3c282abf52af74da0020e733b2fdbd, type: 3}
+  m_Name: CarData_F1
+  m_EditorClassIdentifier: 
+  carID: car_9
+  carName: Formula 1
+  carType: 9
+  rank: 3
+  unlockCostGold: 18000
+  isUnlockedByDefault: 0
+  baseMaxSpeed: 316
+  baseTorque: 450
+  baseBrake: 3000
+  baseHandling: 1.4

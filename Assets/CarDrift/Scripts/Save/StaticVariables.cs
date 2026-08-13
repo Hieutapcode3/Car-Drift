@@ -16,6 +16,22 @@ namespace VTLTools
     public class StaticVariables
     {
         public static string PREF_USER_DATA = "PREF_USER_DATA";
+        #region Currency
+        [ShowInInspector, BoxGroup("Currency")]
+        public static int Gold
+        {
+            get => CurrencyManager.Gold;
+            set => CurrencyManager.SetGold(value);
+        }
+
+        [ShowInInspector, BoxGroup("Currency")]
+        public static int Silver
+        {
+            get => CurrencyManager.Silver;
+            set => CurrencyManager.SetSilver(value);
+        }
+        #endregion
+
         #region Public Variables
         [ShowInInspector, BoxGroup("Setting")]
         public static bool IsSoundOn
@@ -106,6 +122,20 @@ namespace VTLTools
         }
 
 #if UNITY_EDITOR
+        [MenuItem("Tools/Add 10,000 Gold")]
+        public static void AddGoldTool()
+        {
+            CurrencyManager.AddGold(10000);
+            Debug.Log($"[Tools] Gold hiện tại: {CurrencyManager.Gold}");
+        }
+
+        [MenuItem("Tools/Add 10,000 Silver")]
+        public static void AddSilverTool()
+        {
+            CurrencyManager.AddSilver(10000);
+            Debug.Log($"[Tools] Silver hiện tại: {CurrencyManager.Silver}");
+        }
+
         [MenuItem("Tools/Clear Data")]
         public static void ClearData()
         {
@@ -120,6 +150,21 @@ namespace VTLTools
         public bool isSoundOn;
         public bool isMusicOn;
         public bool isVibrationOn;
+
+        [ShowInInspector, BoxGroup("Currency")]
+        public int Gold
+        {
+            get => CurrencyManager.Gold;
+            set => CurrencyManager.SetGold(value);
+        }
+
+        [ShowInInspector, BoxGroup("Currency")]
+        public int Silver
+        {
+            get => CurrencyManager.Silver;
+            set => CurrencyManager.SetSilver(value);
+        }
+
         public UserData()
         {
             isSoundOn = true;
@@ -132,7 +177,9 @@ namespace VTLTools
             return $"userData: \n" +
                    $"isSoundOn: {isSoundOn}\n" +
                    $"isMusicOn: {isMusicOn}\n" +
-                   $"isVibrationOn: {isVibrationOn}\n";
+                   $"isVibrationOn: {isVibrationOn}\n" +
+                   $"Gold: {Gold}\n" +
+                   $"Silver: {Silver}\n";
         }
 
         #region Coins

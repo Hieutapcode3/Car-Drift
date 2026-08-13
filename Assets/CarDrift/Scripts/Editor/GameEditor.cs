@@ -67,4 +67,40 @@ public class GameEditor
 
         Debug.Log("[GameEditor] Clear All Custom Data hoàn tất!");
     }
+
+    [MenuItem("GameEditor/Currency/Add 10,000 Gold")]
+    static void Add10kGold()
+    {
+        CurrencyManager.AddGold(10000);
+        Debug.Log($"[GameEditor] Gold hiện tại: {CurrencyManager.Gold}");
+    }
+
+    [MenuItem("GameEditor/Currency/Add 100,000 Gold")]
+    static void Add100kGold()
+    {
+        CurrencyManager.AddGold(100000);
+        Debug.Log($"[GameEditor] Gold hiện tại: {CurrencyManager.Gold}");
+    }
+
+    [MenuItem("GameEditor/Currency/Add 10,000 Silver")]
+    static void Add10kSilver()
+    {
+        CurrencyManager.AddSilver(10000);
+        Debug.Log($"[GameEditor] Silver hiện tại: {CurrencyManager.Silver}");
+    }
+
+    [MenuItem("GameEditor/Currency/Add 100,000 Silver")]
+    static void Add100kSilver()
+    {
+        CurrencyManager.AddSilver(100000);
+        Debug.Log($"[GameEditor] Silver hiện tại: {CurrencyManager.Silver}");
+    }
+
+    [MenuItem("GameEditor/Currency/Reset Currency (5,000 Gold, 10,000 Silver)")]
+    static void ResetCurrency()
+    {
+        CurrencyManager.SetGold(5000);
+        CurrencyManager.SetSilver(10000);
+        Debug.Log($"[GameEditor] Đã reset Currency: Gold={CurrencyManager.Gold}, Silver={CurrencyManager.Silver}");
+    }
 }

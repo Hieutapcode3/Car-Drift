@@ -12,6 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7b356fe3d9c6d134c917a437b8975669, type: 3}
   m_Name: CarDatabase
   m_EditorClassIdentifier: 
-  cars: []
-  upgradeConfig: {fileID: 0}
-  customConfig: {fileID: 0}
+  cars:
+  - {fileID: 11400000, guid: 558a3cbe56f09f44c9ba2be3aa6c4853, type: 2}
+  - {fileID: 11400000, guid: 4b32b66d8824099429aea13ed203373b, type: 2}
+  - {fileID: 11400000, guid: 8450be5c00375044ea42fccdd7e770d9, type: 2}
+  - {fileID: 11400000, guid: bba5c433bbd88b24ab00c843c6698e66, type: 2}
+  - {fileID: 11400000, guid: 69350466c0ddc8140855da0827968097, type: 2}
+  - {fileID: 11400000, guid: 3f447dffb972bc144b674209645c9d76, type: 2}
+  - {fileID: 11400000, guid: 9b7fde5886a6d3e408af66cdecd50849, type: 2}
+  - {fileID: 11400000, guid: b705660d9b59d5145a152c9f8dc4a446, type: 2}
+  - {fileID: 11400000, guid: 9ddd42948334ab0419b0b9f52eb93a28, type: 2}
+  upgradeConfig: {fileID: 11400000, guid: 10747919331f4d8479303bfd83acb1be, type: 2}
+  customConfig: {fileID: 11400000, guid: 8b3227f0323229446b6c17b384d7072d, type: 2}

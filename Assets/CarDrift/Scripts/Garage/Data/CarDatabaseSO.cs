@@ -4,6 +4,10 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "CarDatabase", menuName = "CarDrift/Car Database")]
 public class CarDatabaseSO : ScriptableObject
 {
+    private const string ResourcePath = "Data/CarDatabase";
+    private static ResourceAsset<CarDatabaseSO> asset = new ResourceAsset<CarDatabaseSO>(ResourcePath);
+    public static CarDatabaseSO Instance => asset.Value;
+
     [Header("Cars Registry")]
     public List<CarDataSO> cars = new List<CarDataSO>();
 

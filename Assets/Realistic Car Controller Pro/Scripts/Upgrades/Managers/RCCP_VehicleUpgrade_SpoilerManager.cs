@@ -1,4 +1,4 @@
-﻿//----------------------------------------------
+//----------------------------------------------
 //        Realistic Car Controller Pro
 //
 // Copyright © 2014 - 2025 BoneCracker Games
@@ -145,8 +145,9 @@ public class RCCP_VehicleUpgrade_SpoilerManager : RCCP_UpgradeComponent, IRCCP_U
         if (spoilerIndex != -1 && spoilers[spoilerIndex] != null)
             spoilers[spoilerIndex].gameObject.SetActive(true);
 
-        if (spoilerIndex != -1 && Loadout.paint != new Color(1f, 1f, 1f, 0f) && spoilers[spoilerIndex].bodyRenderer != null)
-            Paint(Loadout.paint);
+        Color targetColor = (CarController != null && CarController.Customizer != null && CarController.Customizer.PaintManager != null) ? CarController.Customizer.PaintManager.color : Loadout.paint;
+        if (spoilerIndex != -1 && targetColor != new Color(1f, 1f, 1f, 0f) && spoilers[spoilerIndex] != null && spoilers[spoilerIndex].bodyRenderer != null)
+            Paint(targetColor);
 
         //  Refreshing the loadout.
         Refresh(this);
@@ -189,8 +190,9 @@ public class RCCP_VehicleUpgrade_SpoilerManager : RCCP_UpgradeComponent, IRCCP_U
         if (spoilers[spoilerIndex] != null)
             spoilers[spoilerIndex].gameObject.SetActive(true);
 
-        if (Loadout.paint != new Color(1f, 1f, 1f, 0f) && spoilers[spoilerIndex].bodyRenderer != null)
-            Paint(Loadout.paint);
+        Color targetColorWithoutSave = (CarController != null && CarController.Customizer != null && CarController.Customizer.PaintManager != null) ? CarController.Customizer.PaintManager.color : Loadout.paint;
+        if (spoilerIndex != -1 && targetColorWithoutSave != new Color(1f, 1f, 1f, 0f) && spoilers[spoilerIndex] != null && spoilers[spoilerIndex].bodyRenderer != null)
+            Paint(targetColorWithoutSave);
 
     }
 

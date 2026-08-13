@@ -10,16 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8b3c282abf52af74da0020e733b2fdbd, type: 3}
-  m_Name: NewCarData
+  m_Name: CarData_M5_E30
   m_EditorClassIdentifier: 
-  carID: car_0
-  carName: Default Car
-  carPrefab: {fileID: 0}
-  carIcon: {fileID: 0}
-  rank: 0
-  unlockCostGold: 1000
+  carID: car_3
+  carName: BMW M5 E30
+  carType: 3
+  rank: 2
+  unlockCostGold: 8000
   isUnlockedByDefault: 0
-  baseMaxSpeed: 180
-  baseTorque: 300
-  baseBrake: 2000
-  baseHandling: 1
+  baseMaxSpeed: 278
+  baseTorque: 360
+  baseBrake: 2400
+  baseHandling: 1.1

@@ -15,12 +15,18 @@ public class WheelItem : BaseCustomItem
             wheelIconImg.SetNativeSize();
         }
 
-        // Setup preview listeners on both buttons (RemoveAll + add preview)
-        SetupPreviewListener(buyBtn, index);
-        SetupPreviewListener(selectBtn, index);
+        // Cleanup RCCP_UI_Wheel component from buyBtn if present
+        if (buyBtn != null)
+        {
+            RCCP_UI_Wheel oldComp = buyBtn.GetComponent<RCCP_UI_Wheel>();
+            if (oldComp != null) Destroy(oldComp);
+        }
 
         // Common init: sets amountTxt, adds buy/select listeners, calls RefreshState
         InitBase(index, itemData.priceGold);
+
+        // Setup preview listener on selectBtn only (not buyBtn)
+        SetupPreviewListener(selectBtn, index);
     }
 
     private void SetupPreviewListener(UIButton btn, int index)
@@ -34,7 +40,6 @@ public class WheelItem : BaseCustomItem
         }
         rccpWheel.wheelIndex = index;
 
-        btn.onPress.RemoveAllListeners();
         btn.onPress.AddListener(rccpWheel.OnClick);
     }
 }

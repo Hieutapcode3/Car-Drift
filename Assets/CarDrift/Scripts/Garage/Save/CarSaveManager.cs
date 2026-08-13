@@ -10,7 +10,41 @@ public static class CarSaveManager
 
     public static int GetSelectedCarIndex()
     {
+        CheckAndUnlockDefaultCar();
         return PlayerPrefs.GetInt(KEY_SELECTED_CAR_INDEX, 0);
+    }
+
+    public static void CheckAndUnlockDefaultCar()
+    {
+        CarDatabaseSO db = CarDatabaseSO.Instance;
+        if (db == null || db.cars == null || db.cars.Count == 0) return;
+
+        int defaultCarIndex = -1;
+
+        for (int i = 0; i < db.cars.Count; i++)
+        {
+            CarDataSO car = db.cars[i];
+            if (car == null) continue;
+
+            if (car.isUnlockedByDefault)
+            {
+                UnlockCar(car);
+                if (defaultCarIndex == -1)
+                {
+                    defaultCarIndex = i;
+                }
+            }
+        }
+
+        if (!PlayerPrefs.HasKey(KEY_SELECTED_CAR_INDEX))
+        {
+            int selectedIdx = defaultCarIndex >= 0 ? defaultCarIndex : 0;
+            if (selectedIdx < db.cars.Count && db.cars[selectedIdx] != null)
+            {
+                UnlockCar(db.cars[selectedIdx]);
+            }
+            SetSelectedCarIndex(selectedIdx);
+        }
     }
 
     public static void SetSelectedCarIndex(int index)
@@ -87,11 +121,7 @@ public static class CarSaveManager
         if (customConfig == null) return;
         CustomType[] types = (CustomType[])Enum.GetValues(typeof(CustomType));
 
-        int maxItems = 0;
-        if (customConfig.wheels != null) maxItems = Mathf.Max(maxItems, customConfig.wheels.Length);
-        if (customConfig.paints != null) maxItems = Mathf.Max(maxItems, customConfig.paints.Length);
-        if (customConfig.spoilers != null) maxItems = Mathf.Max(maxItems, customConfig.spoilers.Length);
-        if (customConfig.neons != null) maxItems = Mathf.Max(maxItems, customConfig.neons.Length);
+        int maxItems = 50;
 
         foreach (CustomType type in types)
         {
@@ -101,6 +131,16 @@ public static class CarSaveManager
                 PlayerPrefs.DeleteKey(unlockKey);
             }
         }
+
+        if (customConfig.spoilers != null)
+        {
+            foreach (var spoiler in customConfig.spoilers)
+            {
+                string unlockKey = $"Custom_{CustomType.Spoiler}_{spoiler.indexInConfig}_Unlocked";
+                PlayerPrefs.DeleteKey(unlockKey);
+            }
+        }
+
         if (cars != null)
         {
             foreach (CarDataSO car in cars)

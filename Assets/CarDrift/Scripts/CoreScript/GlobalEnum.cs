@@ -2,20 +2,20 @@
 public enum CarType
 {
     // Truck = 0, // 220.4
-    Jeep = 1, // 234.6
-    ClassicRoadster = 2, // 257.6
-    Sedan = 3, // 257.6
-    Coupe = 4, // 267.1
+    // Jeep = 1, // 234.6
+    // ClassicRoadster = 2, // 257.6
+    Sedan = 1, // 257.6
+    Coupe = 2, // 267.1
     // Pickup = 5, // 269.5
-    M5_E30 = 6, // 278.9
-    GTR = 7, // 302
-    F1 = 8, // 316.6
-    SUV2 = 9, // 322.9
-    Muscle = 10, // 325.5
+    M5_E30 = 3, // 278.9
+    M3_E36 = 4, // 386.7
+    M3_E46 = 5, // 365.7
+    GTR = 6, // 302
+    // SUV2 = 9, // 322.9
+    Muscle = 7, // 325.5
     // Van = 11, // 341.7
-    CTR = 12, // 354.9
-    M3_E46 = 13, // 365.7
-    M3_E36 = 14 // 386.7
+    CTR = 8, // 354.9
+    F1 = 9, // 316.6
 }
 
 public enum CarUpgradeType

@@ -16,8 +16,7 @@ public class CarDataSO : ScriptableObject
     [Header("Basic Info")]
     public string carID = "car_0";
     public string carName = "Default Car";
-    public GameObject carPrefab;
-    public Sprite carIcon;
+    public CarType carType = CarType.Sedan;
     public CarRank rank = CarRank.D;
 
     [Header("Unlock & Cost")]
@@ -29,4 +28,10 @@ public class CarDataSO : ScriptableObject
     public float baseTorque = 300f;
     public float baseBrake = 2000f;
     public float baseHandling = 1f;
+
+    /// <summary>
+    /// Key dùng để load prefab từ Addressables.
+    /// Trùng với tên CarType (vd: "Jeep", "GTR", "M5_E30").
+    /// </summary>
+    public string AddressableKey => carType.ToString();
 }

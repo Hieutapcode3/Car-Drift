@@ -1,5 +1,7 @@
 using UnityCommunity.UnitySingleton;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 public class GarageManager : MonoSingleton<GarageManager>
 {
@@ -8,21 +10,32 @@ public class GarageManager : MonoSingleton<GarageManager>
 
     [Header("Spawn Settings")]
     public Transform spawnPoint;
+    [SerializeField] private CarController garageCarController;
 
     [Header("State (ReadOnly)")]
     [SerializeField] private int currentCarIndex = 0;
-    private GameObject currentCarInstance;
     private RCCP_CarController currentRCCPCar;
     private RCCP_Customizer currentCustomizer;
 
     public int CurrentCarIndex => currentCarIndex;
-    public CarDataSO CurrentCarData => carDatabase != null ? carDatabase.GetCarByIndex(currentCarIndex) : null;
+    public CarDataSO CurrentCarData
+    {
+        get
+        {
+            CarDatabaseSO db = carDatabase != null ? carDatabase : CarDatabaseSO.Instance;
+            return db != null ? db.GetCarByIndex(currentCarIndex) : null;
+        }
+    }
     public RCCP_CarController CurrentRCCPCar => currentRCCPCar;
     public RCCP_Customizer CurrentCustomizer => currentCustomizer;
 
     protected override void Awake()
     {
         base.Awake();
+        if (carDatabase == null)
+        {
+            carDatabase = CarDatabaseSO.Instance;
+        }
         currentCarIndex = CarSaveManager.GetSelectedCarIndex();
     }
 
@@ -52,43 +65,34 @@ public class GarageManager : MonoSingleton<GarageManager>
         ShowCar(prev);
     }
 
-    private void SpawnCar(int index)
+    private async void SpawnCar(int index)
     {
-        if (currentCarInstance != null)
-        {
-            Destroy(currentCarInstance);
-            currentCarInstance = null;
-            currentRCCPCar = null;
-            currentCustomizer = null;
-        }
+        CarDataSO data = CurrentCarData;
+        if (data == null) return;
 
-        CarDataSO data = carDatabase != null ? carDatabase.GetCarByIndex(index) : null;
-        if (data == null || data.carPrefab == null) return;
+        EnsureGarageCarController();
+        if (garageCarController == null) return;
 
-        Vector3 pos = spawnPoint != null ? spawnPoint.position : Vector3.zero;
-        Quaternion rot = spawnPoint != null ? spawnPoint.rotation : Quaternion.identity;
+        garageCarController.autoLoadOnStart = false;
+        garageCarController.controllerType = ControllerType.Menu;
+        garageCarController.isMenuModel = true;
 
-        currentCarInstance = Instantiate(data.carPrefab, pos, rot);
-        if (spawnPoint != null)
-            currentCarInstance.transform.SetParent(spawnPoint, true);
+        await garageCarController.LoadCarModelAsync(data.carType);
 
         // Khóa toàn bộ Rigidbody trên xe mô hình trong Garage
-        Rigidbody[] allRbs = currentCarInstance.GetComponentsInChildren<Rigidbody>(true);
+        Rigidbody[] allRbs = garageCarController.GetComponentsInChildren<Rigidbody>(true);
         foreach (var rb in allRbs)
         {
             rb.isKinematic = true;
             rb.useGravity = false;
         }
 
-        CarController wrapper = currentCarInstance.GetComponentInChildren<CarController>(true);
-        if (wrapper != null)
+        currentRCCPCar = garageCarController.carController;
+        if (currentRCCPCar == null)
         {
-            wrapper.controllerType = ControllerType.Menu;
-            wrapper.isMenuModel = true;
-            wrapper.ApplyControlState();
+            currentRCCPCar = garageCarController.GetComponentInChildren<RCCP_CarController>(true);
         }
 
-        currentRCCPCar = currentCarInstance.GetComponentInChildren<RCCP_CarController>(true);
         if (currentRCCPCar != null)
         {
             currentRCCPCar.SetCanControl(false);
@@ -104,6 +108,45 @@ public class GarageManager : MonoSingleton<GarageManager>
 
             ApplySavedUpgradesAndCustoms(data);
         }
+    }
+
+    private void EnsureGarageCarController()
+    {
+        if (garageCarController != null) return;
+
+        if (spawnPoint != null)
+        {
+            garageCarController = spawnPoint.GetComponentInChildren<CarController>();
+            if (garageCarController == null)
+            {
+                GameObject carGo = new GameObject("Garage_CarController");
+                carGo.transform.SetParent(spawnPoint, false);
+                carGo.transform.localPosition = Vector3.zero;
+                carGo.transform.localRotation = Quaternion.identity;
+                garageCarController = carGo.AddComponent<CarController>();
+            }
+        }
+        else
+        {
+            garageCarController = FindObjectOfType<CarController>();
+            if (garageCarController == null)
+            {
+                GameObject carGo = new GameObject("Garage_CarController");
+                carGo.transform.position = Vector3.zero;
+                carGo.transform.rotation = Quaternion.identity;
+                garageCarController = carGo.AddComponent<CarController>();
+            }
+        }
+    }
+
+    private void UnloadCurrentCar()
+    {
+        if (garageCarController != null)
+        {
+            garageCarController.UnloadCurrentCar();
+        }
+        currentRCCPCar = null;
+        currentCustomizer = null;
     }
 
     public void ApplySavedUpgradesAndCustoms(CarDataSO data)
@@ -145,14 +188,27 @@ public class GarageManager : MonoSingleton<GarageManager>
             {
                 if (currentCustomizer.WheelManager != null)
                 {
+                    currentCustomizer.WheelManager.UpdateWheelWithoutSave(wheelIdx);
                 }
             }
 
             // Spoiler
             int spoilerIdx = CarSaveManager.GetCustomIndex(id, CustomType.Spoiler);
-            if (spoilerIdx >= 0 && cfg.spoilers != null && spoilerIdx < cfg.spoilers.Length)
+            if (spoilerIdx >= 0 && cfg.spoilers != null)
             {
-
+                int spoilerConfigIdx = spoilerIdx;
+                for (int i = 0; i < cfg.spoilers.Length; i++)
+                {
+                    if (cfg.spoilers[i].indexInConfig == spoilerIdx)
+                    {
+                        spoilerConfigIdx = i;
+                        break;
+                    }
+                }
+                if (currentCustomizer.SpoilerManager != null)
+                {
+                    currentCustomizer.SpoilerManager.UpgradeWithoutSave(spoilerConfigIdx);
+                }
             }
 
             // Neon
@@ -241,8 +297,21 @@ public class GarageManager : MonoSingleton<GarageManager>
                     priceGold = cfg.paints[itemIndex].priceGold;
                 break;
             case CustomType.Spoiler:
-                if (cfg.spoilers != null && itemIndex >= 0 && itemIndex < cfg.spoilers.Length)
-                    priceGold = cfg.spoilers[itemIndex].priceGold;
+                if (cfg.spoilers != null)
+                {
+                    for (int i = 0; i < cfg.spoilers.Length; i++)
+                    {
+                        if (cfg.spoilers[i].indexInConfig == itemIndex)
+                        {
+                            priceGold = cfg.spoilers[i].priceGold;
+                            break;
+                        }
+                    }
+                    if (priceGold == 0 && itemIndex >= 0 && itemIndex < cfg.spoilers.Length)
+                    {
+                        priceGold = cfg.spoilers[itemIndex].priceGold;
+                    }
+                }
                 break;
             case CustomType.Neon:
                 if (cfg.neons != null && itemIndex >= 0 && itemIndex < cfg.neons.Length)

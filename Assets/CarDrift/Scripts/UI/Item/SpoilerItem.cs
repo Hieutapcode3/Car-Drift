@@ -15,12 +15,18 @@ public class SpoilerItem : BaseCustomItem
             spoilerIconImg.SetNativeSize();
         }
 
-        // Setup preview listeners on both buttons (RemoveAll + add preview)
-        SetupPreviewListener(buyBtn, indexInConfig);
-        SetupPreviewListener(selectBtn, indexInConfig);
+        // Cleanup RCCP_UI_Spoiler component from buyBtn if present
+        if (buyBtn != null)
+        {
+            RCCP_UI_Spoiler oldComp = buyBtn.GetComponent<RCCP_UI_Spoiler>();
+            if (oldComp != null) Destroy(oldComp);
+        }
 
         // Common init: sets amountTxt, adds buy/select listeners, calls RefreshState
         InitBase(indexInConfig, itemData.priceGold);
+
+        // Setup preview listener on selectBtn only (not buyBtn)
+        SetupPreviewListener(selectBtn, indexInConfig);
     }
 
     private void SetupPreviewListener(UIButton btn, int indexInConfig)
@@ -34,7 +40,6 @@ public class SpoilerItem : BaseCustomItem
         }
         rccpSpoiler.index = indexInConfig;
 
-        btn.onPress.RemoveAllListeners();
         btn.onPress.AddListener(rccpSpoiler.OnClick);
     }
 }

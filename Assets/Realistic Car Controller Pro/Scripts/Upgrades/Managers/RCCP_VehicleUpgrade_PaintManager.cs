@@ -1,4 +1,4 @@
-﻿//----------------------------------------------
+//----------------------------------------------
 //        Realistic Car Controller Pro
 //
 // Copyright © 2014 - 2025 BoneCracker Games
@@ -98,8 +98,8 @@ public class RCCP_VehicleUpgrade_PaintManager : RCCP_UpgradeComponent, IRCCP_Upg
         }
 
         //  Painting spoilers.
-        if (CarController.Customizer.SpoilerManager != null && Loadout.paint != new Color(1f, 1f, 1f, 0f))
-            CarController.Customizer.SpoilerManager.Paint(Loadout.paint);
+        if (CarController != null && CarController.Customizer != null && CarController.Customizer.SpoilerManager != null)
+            CarController.Customizer.SpoilerManager.Paint(color);
 
         //  Refreshing the loadout.
         Refresh(this);
@@ -136,8 +136,8 @@ public class RCCP_VehicleUpgrade_PaintManager : RCCP_UpgradeComponent, IRCCP_Upg
         }
 
         //  Painting spoilers.
-        if (CarController.Customizer.SpoilerManager != null && Loadout.paint != new Color(1f, 1f, 1f, 0f))
-            CarController.Customizer.SpoilerManager.Paint(Loadout.paint);
+        if (CarController != null && CarController.Customizer != null && CarController.Customizer.SpoilerManager != null)
+            CarController.Customizer.SpoilerManager.Paint(color);
 
     }
 
