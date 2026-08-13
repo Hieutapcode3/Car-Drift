@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using TMPro;
 using UnityEngine;
@@ -30,10 +31,15 @@ public class CustomPanel : Panel<CustomPanel>
     private Button currentSelectedBtn;
     private CustomType currentCustomType = CustomType.Wheels;
 
+    /// <summary>
+    /// Danh sách các item đã spawn — dùng để refresh state mà không cần destroy/re-spawn.
+    /// </summary>
+    private readonly List<BaseCustomItem> currentItems = new List<BaseCustomItem>();
+
     private void OnEnable()
     {
         CurrencyManager.OnCurrencyChanged += UpdateCurrencyUI;
-        CarSaveManager.OnCustomizationUpdated += RefreshCurrentTab;
+        CarSaveManager.OnCustomizationUpdated += RefreshCurrentItems;
         UpdateCurrencyUI(CurrencyManager.Gold, CurrencyManager.Silver);
 
         if (btnWheel != null) btnWheel.onClick.AddListener(() => SelectTab(btnWheel, CustomType.Wheels));
@@ -49,12 +55,22 @@ public class CustomPanel : Panel<CustomPanel>
     private void OnDisable()
     {
         CurrencyManager.OnCurrencyChanged -= UpdateCurrencyUI;
-        CarSaveManager.OnCustomizationUpdated -= RefreshCurrentTab;
+        CarSaveManager.OnCustomizationUpdated -= RefreshCurrentItems;
     }
 
-    private void RefreshCurrentTab()
+    /// <summary>
+    /// Chỉ refresh state trên các item đã spawn, KHÔNG destroy/re-spawn.
+    /// Gọi khi mua item hoặc thay đổi customization.
+    /// </summary>
+    private void RefreshCurrentItems()
     {
-        OnSelectCustomType(currentCustomType);
+        for (int i = currentItems.Count - 1; i >= 0; i--)
+        {
+            if (currentItems[i] != null)
+                currentItems[i].RefreshState();
+            else
+                currentItems.RemoveAt(i);
+        }
     }
 
     private void UpdateCurrencyUI(int gold, int silver)
@@ -75,7 +91,7 @@ public class CustomPanel : Panel<CustomPanel>
             }
             currentSelectedBtn = clickedBtn;
         }
-        OnSelectCustomType(customType);
+        SpawnItemsForType(customType);
     }
 
     private void ResetAllButtonSprites()
@@ -94,17 +110,14 @@ public class CustomPanel : Panel<CustomPanel>
         }
     }
 
-    private void OnSelectCustomType(CustomType customType)
+    /// <summary>
+    /// Destroy tất cả items hiện tại, spawn mới cho customType, lưu vào currentItems.
+    /// Chỉ gọi khi chuyển tab.
+    /// </summary>
+    private void SpawnItemsForType(CustomType customType)
     {
         currentCustomType = customType;
-
-        if (itemContent != null)
-        {
-            foreach (Transform child in itemContent)
-            {
-                Destroy(child.gameObject);
-            }
-        }
+        ClearItems();
 
         if (customType == CustomType.Wheels)
         {
@@ -124,6 +137,18 @@ public class CustomPanel : Panel<CustomPanel>
         }
     }
 
+    private void ClearItems()
+    {
+        currentItems.Clear();
+        if (itemContent != null)
+        {
+            foreach (Transform child in itemContent)
+            {
+                Destroy(child.gameObject);
+            }
+        }
+    }
+
     private void SpawnWheelItems()
     {
         if (itemContent == null || wheelItemPrefab == null) return;
@@ -136,6 +161,7 @@ public class CustomPanel : Panel<CustomPanel>
         {
             WheelItem item = Instantiate(wheelItemPrefab, itemContent);
             item.Init(config.wheels[i], i);
+            currentItems.Add(item);
         }
     }
 
@@ -151,6 +177,7 @@ public class CustomPanel : Panel<CustomPanel>
         {
             SpoilerItem item = Instantiate(spoilerItemPrefab, itemContent);
             item.Init(config.spoilers[i], config.spoilers[i].indexInConfig);
+            currentItems.Add(item);
         }
     }
 
@@ -166,6 +193,7 @@ public class CustomPanel : Panel<CustomPanel>
         {
             PaintItem item = Instantiate(paintItemPrefab, itemContent);
             item.Init(config.paints[i], i);
+            currentItems.Add(item);
         }
     }
 
@@ -181,6 +209,7 @@ public class CustomPanel : Panel<CustomPanel>
         {
             NeonItem item = Instantiate(neonItemPrefab, itemContent);
             item.Init(config.neons[i], i);
+            currentItems.Add(item);
         }
     }
 

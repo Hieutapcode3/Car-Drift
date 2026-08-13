@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public static class CarSaveManager
@@ -64,7 +65,7 @@ public static class CarSaveManager
 
     public static bool IsCustomUnlocked(CustomType type, int itemIndex, int priceGold = 0)
     {
-        if (itemIndex <= 0 || priceGold <= 0) return true;
+        if (priceGold <= 0) return true;
         string key = $"Custom_{type}_{itemIndex}_Unlocked";
         return PlayerPrefs.GetInt(key, 0) == 1;
     }
@@ -80,5 +81,40 @@ public static class CarSaveManager
     public static void NotifyCustomizationUpdated()
     {
         OnCustomizationUpdated?.Invoke();
+    }
+    public static void ClearAllCustomData(IList<CarDataSO> cars, CustomConfigSO customConfig)
+    {
+        if (customConfig == null) return;
+        CustomType[] types = (CustomType[])Enum.GetValues(typeof(CustomType));
+
+        int maxItems = 0;
+        if (customConfig.wheels != null) maxItems = Mathf.Max(maxItems, customConfig.wheels.Length);
+        if (customConfig.paints != null) maxItems = Mathf.Max(maxItems, customConfig.paints.Length);
+        if (customConfig.spoilers != null) maxItems = Mathf.Max(maxItems, customConfig.spoilers.Length);
+        if (customConfig.neons != null) maxItems = Mathf.Max(maxItems, customConfig.neons.Length);
+
+        foreach (CustomType type in types)
+        {
+            for (int i = 0; i < maxItems; i++)
+            {
+                string unlockKey = $"Custom_{type}_{i}_Unlocked";
+                PlayerPrefs.DeleteKey(unlockKey);
+            }
+        }
+        if (cars != null)
+        {
+            foreach (CarDataSO car in cars)
+            {
+                if (car == null) continue;
+                foreach (CustomType type in types)
+                {
+                    string indexKey = $"Car_{car.carID}_{type}_Index";
+                    PlayerPrefs.DeleteKey(indexKey);
+                }
+            }
+        }
+
+        PlayerPrefs.Save();
+        NotifyCustomizationUpdated();
     }
 }
