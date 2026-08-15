@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CarData_M3_E46
   m_EditorClassIdentifier: 
   carID: car_5
-  carName: BMW M3 E46
+  carName: Driftline E46
   carType: 5
   rank: 5
   unlockCostGold: 50000

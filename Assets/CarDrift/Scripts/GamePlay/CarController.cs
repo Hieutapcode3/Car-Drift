@@ -233,14 +233,124 @@ public class CarController : MonoBehaviour
             FetchReferences();
             ApplyDamageSettings();
             ApplyControlState();
-            // if (useCustomColor)
-            // {
-            //     ApplyCarColor();
-            // }
+            ApplySavedCustomization();
         }
         catch (System.Exception ex)
         {
             Debug.LogError($"[CarController] ❌ Ngoại lệ khi load Addressable '{addressKey}': {ex.Message}");
+        }
+    }
+
+    public void ApplySavedCustomization()
+    {
+        if (!Application.isPlaying) return;
+
+        if (carController == null)
+            FetchReferences();
+
+        if (carController == null) return;
+
+        RCCP_Customizer customizer = carController.Customizer;
+        if (customizer == null)
+        {
+            customizer = carController.GetComponentInChildren<RCCP_Customizer>(true);
+            if (customizer == null)
+            {
+                customizer = carController.gameObject.AddComponent<RCCP_Customizer>();
+            }
+        }
+
+        if (customizer != null)
+        {
+            customizer.Initialize();
+
+            CarDataSO carData = null;
+            if (GarageManager.Instance != null && GarageManager.Instance.CurrentCarData != null)
+            {
+                carData = GarageManager.Instance.CurrentCarData;
+            }
+            if (carData == null && CarDatabaseSO.Instance != null)
+            {
+                carData = CarDatabaseSO.Instance.GetCarByIndex(CarSaveManager.GetSelectedCarIndex());
+            }
+
+            if (carData != null)
+            {
+                string id = carData.carID;
+
+                // Upgrades
+                int engineLvl = CarSaveManager.GetUpgradeLevel(id, UpgradeType.Engine);
+                int handlingLvl = CarSaveManager.GetUpgradeLevel(id, UpgradeType.Handling);
+                int brakeLvl = CarSaveManager.GetUpgradeLevel(id, UpgradeType.Brake);
+                int speedLvl = CarSaveManager.GetUpgradeLevel(id, UpgradeType.Speed);
+
+                if (customizer.UpgradeManager != null)
+                {
+                    customizer.UpgradeManager.UpgradeEngineWithoutSave(engineLvl);
+                    customizer.UpgradeManager.UpgradeHandlingWithoutSave(handlingLvl);
+                    customizer.UpgradeManager.UpgradeBrakeWithoutSave(brakeLvl);
+                    customizer.UpgradeManager.UpgradeSpeedWithoutSave(speedLvl);
+                }
+
+                // Customizations
+                CustomConfigSO cfg = (GarageManager.Instance != null && GarageManager.Instance.carDatabase != null && GarageManager.Instance.carDatabase.customConfig != null)
+                    ? GarageManager.Instance.carDatabase.customConfig
+                    : CustomConfigSO.Instance;
+
+                if (cfg != null)
+                {
+                    // Paint
+                    int paintIdx = CarSaveManager.GetCustomIndex(id, CustomType.Paint);
+                    if (paintIdx >= 0 && cfg.paints != null && paintIdx < cfg.paints.Length)
+                    {
+                        if (customizer.PaintManager != null)
+                            customizer.PaintManager.PaintWithoutSave(cfg.paints[paintIdx].color);
+                    }
+
+                    // Wheels
+                    int wheelIdx = CarSaveManager.GetCustomIndex(id, CustomType.Wheels);
+                    if (wheelIdx >= 0 && cfg.wheels != null && wheelIdx < cfg.wheels.Length)
+                    {
+                        if (customizer.WheelManager != null)
+                        {
+                            customizer.WheelManager.UpdateWheelWithoutSave(wheelIdx);
+                        }
+                    }
+
+                    // Spoiler
+                    int spoilerIdx = CarSaveManager.GetCustomIndex(id, CustomType.Spoiler);
+                    if (spoilerIdx >= 0 && cfg.spoilers != null)
+                    {
+                        int spoilerConfigIdx = spoilerIdx;
+                        for (int i = 0; i < cfg.spoilers.Length; i++)
+                        {
+                            if (cfg.spoilers[i].indexInConfig == spoilerIdx)
+                            {
+                                spoilerConfigIdx = i;
+                                break;
+                            }
+                        }
+                        if (customizer.SpoilerManager != null)
+                        {
+                            customizer.SpoilerManager.UpgradeWithoutSave(spoilerConfigIdx);
+                        }
+                    }
+
+                    // Neon
+                    int neonIdx = CarSaveManager.GetCustomIndex(id, CustomType.Neon);
+                    if (neonIdx >= 0 && cfg.neons != null && neonIdx < cfg.neons.Length)
+                    {
+                        if (customizer.NeonManager != null)
+                        {
+                            Material mat = cfg.neons[neonIdx].neonMat;
+                            if (mat != null)
+                                customizer.NeonManager.UpgradeWithoutSave(mat);
+                            else
+                                customizer.NeonManager.Restore();
+                        }
+                    }
+                }
+            }
         }
     }
     public void SetCarType(CarType newCarType)

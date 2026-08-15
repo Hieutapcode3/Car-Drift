@@ -1,4 +1,4 @@
-﻿using Sirenix.OdinInspector;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace UnityCommunity.UnitySingleton
@@ -36,9 +36,9 @@ namespace UnityCommunity.UnitySingleton
                 if (instance == null)
                 {
 #if UNITY_6000
-                    instance = FindAnyObjectByType<T>();
+                    instance = FindAnyObjectByType<T>(FindObjectsInactive.Include);
 #else
-                    instance = FindObjectOfType<T>();
+                    instance = FindObjectOfType<T>(true);
 #endif
                     if (instance == null)
                     {
@@ -73,18 +73,19 @@ namespace UnityCommunity.UnitySingleton
                 // Initialize existing instance
                 InitializeSingleton();
             }
-            else
+            else if (instance != this)
             {
-
-                // Destory duplicates
+                // Destory previous auto-generated instance and keep scene instance
                 if (Application.isPlaying)
                 {
-                    Destroy(gameObject);
+                    Destroy(instance.gameObject);
                 }
                 else
                 {
-                    DestroyImmediate(gameObject);
+                    DestroyImmediate(instance.gameObject);
                 }
+                instance = this as T;
+                InitializeSingleton();
             }
         }
 

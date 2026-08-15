@@ -1514,6 +1514,12 @@ MonoBehaviour:
   popup: {fileID: 0}
   isAllowScrollCamera: 0
   blockTouched: 1
+  goldAmountTxt: {fileID: 2611958207836577798}
+  silverAmountTxt: {fileID: 5349183579526033133}
+  engineUgBtn: {fileID: 7994598644411075045}
+  handlingUgBtn: {fileID: 1838646335470369483}
+  brakeUgBtn: {fileID: 2102273866326917860}
+  speedUgBtn: {fileID: 2954732432774272272}
 --- !u!1 &3156582129532748138
 GameObject:
   m_ObjectHideFlags: 0
@@ -2477,7 +2483,19 @@ MonoBehaviour:
   IsOneTimeInteractable: 0
   onPress:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1048972784393645713}
+        m_TargetAssemblyTypeName: UpgradePanel, Assembly-CSharp
+        m_MethodName: BackToMainMenu
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   onFingerDown:
     m_PersistentCalls:
       m_Calls: []
@@ -4251,7 +4269,7 @@ GameObject:
   - component: {fileID: 524688653458807680}
   - component: {fileID: 6225021087897222141}
   m_Layer: 0
-  m_Name: GoldIcon
+  m_Name: SilverIcon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5786,7 +5804,7 @@ GameObject:
   - component: {fileID: 3332324180340037965}
   - component: {fileID: 5349183579526033133}
   m_Layer: 0
-  m_Name: GoldAmount
+  m_Name: SilverAmount
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7799,7 +7817,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 8400000, guid: 06e7f6560dc3110488de99cfe0314a04, type: 2}
+  m_Texture: {fileID: 8400000, guid: 79e609dd26f60db44b6244cfe67bd790, type: 2}
   m_UVRect:
     serializedVersion: 2
     x: 0

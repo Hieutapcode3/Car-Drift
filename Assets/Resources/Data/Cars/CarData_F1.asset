@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CarData_F1
   m_EditorClassIdentifier: 
   carID: car_9
-  carName: Formula 1
+  carName: Apex F1
   carType: 9
   rank: 3
   unlockCostGold: 18000

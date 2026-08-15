@@ -6578,6 +6578,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2345476422057323453}
   - component: {fileID: 583380066036983842}
+  - component: {fileID: 8502375778179378008}
   m_Layer: 8
   m_Name: Neon
   m_TagString: Untagged
@@ -6614,6 +6615,30 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   completeSetup: 0
   checkedSetup: 0
+--- !u!114 &8502375778179378008
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1401679676172131553}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0777d029ed3dffa4692f417d4aba19ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 2100000, guid: 5a8bf0c127822fc4facf610a4741e265, type: 2}
+  m_DrawDistance: 500
+  m_FadeScale: 0.9
+  m_StartAngleFade: 180
+  m_EndAngleFade: 180
+  m_UVScale: {x: 1, y: 1}
+  m_UVBias: {x: 0, y: 0}
+  m_DecalLayerMask: 1
+  m_ScaleMode: 1
+  m_Offset: {x: 0, y: 0, z: 0}
+  m_Size: {x: 1, y: 1, z: 1}
+  m_FadeFactor: 1
 --- !u!1 &1444920516868931361
 GameObject:
   m_ObjectHideFlags: 0
@@ -12058,6 +12083,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8901865130908894558}
   - component: {fileID: 1539751641648402157}
+  - component: {fileID: 5568135466264814641}
   m_Layer: 8
   m_Name: Decal_Front
   m_TagString: Untagged
@@ -12094,6 +12120,30 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   completeSetup: 0
   checkedSetup: 0
+--- !u!114 &5568135466264814641
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1946985804900303138}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0777d029ed3dffa4692f417d4aba19ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 2100000, guid: b252fb4fac6eeaf458fab961e66dac63, type: 2}
+  m_DrawDistance: 500
+  m_FadeScale: 0.9
+  m_StartAngleFade: 180
+  m_EndAngleFade: 180
+  m_UVScale: {x: 1, y: 1}
+  m_UVBias: {x: 0, y: 0}
+  m_DecalLayerMask: 1
+  m_ScaleMode: 1
+  m_Offset: {x: 0, y: 0, z: 0}
+  m_Size: {x: 1, y: 1, z: 1}
+  m_FadeFactor: 1
 --- !u!1 &1980896657839403842
 GameObject:
   m_ObjectHideFlags: 0
@@ -14901,7 +14951,7 @@ MonoBehaviour:
   carColorType: 0
   useCustomColor: 0
   randomColorForAI: 1
-  rotationSpeed: 30
+  rotationSpeed: 0
   rotationAxis: {x: 0, y: 1, z: 0}
   freezePhysicsInMenu: 1
   indexRacePref: {fileID: 4074159594652143259, guid: 069063be49b75b04ab8a1c5641417b04, type: 3}
@@ -14909,6 +14959,9 @@ MonoBehaviour:
   carController: {fileID: 4032309566052263449}
   aiController: {fileID: 0}
   damageController: {fileID: 0}
+  indexTargetPoint: 1
+  totalWaypointsPassed: 0
+  currentLapCount: 1
 --- !u!1 &3551637893407249780
 GameObject:
   m_ObjectHideFlags: 0
@@ -15991,6 +16044,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1494271818172502210}
   - component: {fileID: 7661245444158504057}
+  - component: {fileID: 4036395244106342363}
   m_Layer: 8
   m_Name: Decal_Right
   m_TagString: Untagged
@@ -16027,6 +16081,30 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   completeSetup: 0
   checkedSetup: 0
+--- !u!114 &4036395244106342363
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4657361715352997614}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0777d029ed3dffa4692f417d4aba19ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 2100000, guid: b252fb4fac6eeaf458fab961e66dac63, type: 2}
+  m_DrawDistance: 500
+  m_FadeScale: 0.9
+  m_StartAngleFade: 180
+  m_EndAngleFade: 180
+  m_UVScale: {x: 1, y: 1}
+  m_UVBias: {x: 0, y: 0}
+  m_DecalLayerMask: 1
+  m_ScaleMode: 1
+  m_Offset: {x: 0, y: 0, z: 0}
+  m_Size: {x: 1, y: 1, z: 1}
+  m_FadeFactor: 1
 --- !u!1 &4673472728321061655
 GameObject:
   m_ObjectHideFlags: 0
@@ -29042,6 +29120,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8041641200588805490}
   - component: {fileID: 8656146732908398254}
+  - component: {fileID: 5664984737911963898}
   m_Layer: 8
   m_Name: Decal_Left
   m_TagString: Untagged
@@ -29078,6 +29157,30 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   completeSetup: 0
   checkedSetup: 0
+--- !u!114 &5664984737911963898
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7312485979417920824}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0777d029ed3dffa4692f417d4aba19ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 2100000, guid: b252fb4fac6eeaf458fab961e66dac63, type: 2}
+  m_DrawDistance: 500
+  m_FadeScale: 0.9
+  m_StartAngleFade: 180
+  m_EndAngleFade: 180
+  m_UVScale: {x: 1, y: 1}
+  m_UVBias: {x: 0, y: 0}
+  m_DecalLayerMask: 1
+  m_ScaleMode: 1
+  m_Offset: {x: 0, y: 0, z: 0}
+  m_Size: {x: 1, y: 1, z: 1}
+  m_FadeFactor: 1
 --- !u!1 &7333979370814672992
 GameObject:
   m_ObjectHideFlags: 0
@@ -32875,6 +32978,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2917410379032066764}
   - component: {fileID: 3860361435045458400}
+  - component: {fileID: 5564593609041555037}
   m_Layer: 8
   m_Name: Decal_Back
   m_TagString: Untagged
@@ -32911,6 +33015,30 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   completeSetup: 0
   checkedSetup: 0
+--- !u!114 &5564593609041555037
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9169892061042328253}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0777d029ed3dffa4692f417d4aba19ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 2100000, guid: b252fb4fac6eeaf458fab961e66dac63, type: 2}
+  m_DrawDistance: 500
+  m_FadeScale: 0.9
+  m_StartAngleFade: 180
+  m_EndAngleFade: 180
+  m_UVScale: {x: 1, y: 1}
+  m_UVBias: {x: 0, y: 0}
+  m_DecalLayerMask: 1
+  m_ScaleMode: 1
+  m_Offset: {x: 0, y: 0, z: 0}
+  m_Size: {x: 1, y: 1, z: 1}
+  m_FadeFactor: 1
 --- !u!1 &9179705272185081026
 GameObject:
   m_ObjectHideFlags: 0

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CarData_Muscle
   m_EditorClassIdentifier: 
   carID: car_7
-  carName: Muscle Car
+  carName: Thunderbolt
   carType: 7
   rank: 4
   unlockCostGold: 30000

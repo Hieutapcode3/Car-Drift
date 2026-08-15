@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CarData_GTR
   m_EditorClassIdentifier: 
   carID: car_6
-  carName: Nissan GTR
+  carName: Nightstrike
   carType: 6
   rank: 2
   unlockCostGold: 12000

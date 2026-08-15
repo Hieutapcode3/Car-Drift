@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CarData_M5_E30
   m_EditorClassIdentifier: 
   carID: car_3
-  carName: BMW M5 E30
+  carName: Legacy M5
   carType: 3
   rank: 2
   unlockCostGold: 8000

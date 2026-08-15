@@ -2076,8 +2076,9 @@ MonoBehaviour:
   spoilerItemPrefab: {fileID: 1130566953310473745, guid: 13026266e0784704c9cdfe44e5657ea4, type: 3}
   paintItemPrefab: {fileID: 7563157836691564834, guid: aae05f7690e89f84fac7fb6dbd8fc947, type: 3}
   neonItemPrefab: {fileID: -1256801567464102025, guid: 77f2e9bb63659794ca1658c84c52243c, type: 3}
-  normalSprite: {fileID: 21300000, guid: 42c40a3f9b15644418fea355f701c0af, type: 3}
+  normalSprite: {fileID: 21300000, guid: 443ac81abeace244585950887964790b, type: 3}
   selectedSprite: {fileID: 21300000, guid: 9c9ba51f0dfd79c4bbd61478b50e6208, type: 3}
+  disabledSpoilerSprite: {fileID: 21300000, guid: 42c40a3f9b15644418fea355f701c0af, type: 3}
   btnWheel: {fileID: 5952718417906807358}
   btnSpoiler: {fileID: 9133184298441115665}
   btnNeon: {fileID: 6020606377575015802}

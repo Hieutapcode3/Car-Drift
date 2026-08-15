@@ -21,6 +21,7 @@ public class CustomPanel : Panel<CustomPanel>
     [Title("Sprites")]
     [SerializeField] private Sprite normalSprite;
     [SerializeField] private Sprite selectedSprite;
+    [SerializeField] private Sprite disabledSpoilerSprite;
 
     [Title("Buttons")]
     [SerializeField] private Button btnWheel;
@@ -42,10 +43,29 @@ public class CustomPanel : Panel<CustomPanel>
         CarSaveManager.OnCustomizationUpdated += RefreshCurrentItems;
         UpdateCurrencyUI(CurrencyManager.Gold, CurrencyManager.Silver);
 
-        if (btnWheel != null) btnWheel.onClick.AddListener(() => SelectTab(btnWheel, CustomType.Wheels));
-        if (btnSpoiler != null) btnSpoiler.onClick.AddListener(() => SelectTab(btnSpoiler, CustomType.Spoiler));
-        if (btnNeon != null) btnNeon.onClick.AddListener(() => SelectTab(btnNeon, CustomType.Neon));
-        if (btnPaint != null) btnPaint.onClick.AddListener(() => SelectTab(btnPaint, CustomType.Paint));
+        if (btnWheel != null)
+        {
+            btnWheel.onClick.RemoveAllListeners();
+            btnWheel.onClick.AddListener(() => SelectTab(btnWheel, CustomType.Wheels));
+        }
+        if (btnSpoiler != null)
+        {
+            btnSpoiler.onClick.RemoveAllListeners();
+            btnSpoiler.onClick.AddListener(() => SelectTab(btnSpoiler, CustomType.Spoiler));
+        }
+        if (btnNeon != null)
+        {
+            btnNeon.onClick.RemoveAllListeners();
+            btnNeon.onClick.AddListener(() => SelectTab(btnNeon, CustomType.Neon));
+        }
+        if (btnPaint != null)
+        {
+            btnPaint.onClick.RemoveAllListeners();
+            btnPaint.onClick.AddListener(() => SelectTab(btnPaint, CustomType.Paint));
+        }
+
+        CheckSpoilerAvailability();
+
         if (btnWheel != null)
         {
             SelectTab(btnWheel, CustomType.Wheels);
@@ -56,6 +76,46 @@ public class CustomPanel : Panel<CustomPanel>
     {
         CurrencyManager.OnCurrencyChanged -= UpdateCurrencyUI;
         CarSaveManager.OnCustomizationUpdated -= RefreshCurrentItems;
+        if (btnWheel != null) btnWheel.onClick.RemoveAllListeners();
+        if (btnSpoiler != null) btnSpoiler.onClick.RemoveAllListeners();
+        if (btnNeon != null) btnNeon.onClick.RemoveAllListeners();
+        if (btnPaint != null) btnPaint.onClick.RemoveAllListeners();
+    }
+
+    /// <summary>
+    /// Kiểm tra xe hiện tại có hỗ trợ spoiler manager không.
+    /// </summary>
+    private bool HasSpoilerManager()
+    {
+        if (GarageManager.Instance != null && GarageManager.Instance.CurrentCustomizer != null)
+        {
+            return GarageManager.Instance.CurrentCustomizer.SpoilerManager != null;
+        }
+        if (RCCP_SceneManager.Instance.activePlayerVehicle != null && (RCCP_SceneManager.Instance.activePlayerVehicle.Customizer != null))
+        {
+            return RCCP_SceneManager.Instance.activePlayerVehicle.Customizer.SpoilerManager != null;
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// Vô hiệu hóa nút Spoiler và đổi sprite nếu xe không hỗ trợ spoiler.
+    /// </summary>
+    private void CheckSpoilerAvailability()
+    {
+        bool canCustomSpoiler = HasSpoilerManager();
+        if (btnSpoiler != null)
+        {
+            btnSpoiler.interactable = canCustomSpoiler;
+            if (!canCustomSpoiler && disabledSpoilerSprite != null)
+            {
+                Image btnImg = btnSpoiler.image != null ? btnSpoiler.image : btnSpoiler.GetComponent<Image>();
+                if (btnImg != null)
+                {
+                    btnImg.sprite = disabledSpoilerSprite;
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -81,6 +141,8 @@ public class CustomPanel : Panel<CustomPanel>
 
     public void SelectTab(Button clickedBtn, CustomType customType)
     {
+        if (clickedBtn != null && !clickedBtn.interactable) return;
+
         ResetAllButtonSprites();
         if (clickedBtn != null)
         {
@@ -102,9 +164,16 @@ public class CustomPanel : Panel<CustomPanel>
             if (btn != null)
             {
                 Image btnImg = btn.image != null ? btn.image : btn.GetComponent<Image>();
-                if (btnImg != null && normalSprite != null)
+                if (btnImg != null)
                 {
-                    btnImg.sprite = normalSprite;
+                    if (btn == btnSpoiler && !btn.interactable && disabledSpoilerSprite != null)
+                    {
+                        btnImg.sprite = disabledSpoilerSprite;
+                    }
+                    else if (normalSprite != null)
+                    {
+                        btnImg.sprite = normalSprite;
+                    }
                 }
             }
         }

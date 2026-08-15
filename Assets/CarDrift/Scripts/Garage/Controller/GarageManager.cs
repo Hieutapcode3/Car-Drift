@@ -1,7 +1,5 @@
 using UnityCommunity.UnitySingleton;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
-using UnityEngine.ResourceManagement.AsyncOperations;
 
 public class GarageManager : MonoSingleton<GarageManager>
 {
@@ -10,12 +8,25 @@ public class GarageManager : MonoSingleton<GarageManager>
 
     [Header("Spawn Settings")]
     public Transform spawnPoint;
+    [SerializeField] private CarController carControllerPrefab;
     [SerializeField] private CarController garageCarController;
+
+    [Header("Camera Orbit Settings")]
+    public Camera garageCamera;
+    [SerializeField] private float cameraDistance = 5.5f;
+    [SerializeField] private float cameraHeight = 1.1f;
+    [SerializeField] private float cameraPitch = 10f;
+    [SerializeField] private float orbitSmoothSpeed = 12f;
 
     [Header("State (ReadOnly)")]
     [SerializeField] private int currentCarIndex = 0;
     private RCCP_CarController currentRCCPCar;
     private RCCP_Customizer currentCustomizer;
+
+    private float targetYaw = 0f;
+    private float currentYaw = 0f;
+    private float defaultYaw = 0f;
+    private bool isOrbitInitialized = false;
 
     public int CurrentCarIndex => currentCarIndex;
     public CarDataSO CurrentCarData
@@ -23,14 +34,25 @@ public class GarageManager : MonoSingleton<GarageManager>
         get
         {
             CarDatabaseSO db = carDatabase != null ? carDatabase : CarDatabaseSO.Instance;
-            return db != null ? db.GetCarByIndex(currentCarIndex) : null;
+            return (db != null && db.cars != null && currentCarIndex >= 0 && currentCarIndex < db.cars.Count)
+                ? db.cars[currentCarIndex]
+                : null;
         }
     }
+
+    public CarController CurrentCarController => garageCarController;
     public RCCP_CarController CurrentRCCPCar => currentRCCPCar;
     public RCCP_Customizer CurrentCustomizer => currentCustomizer;
 
+    public static event System.Action<CarDataSO> OnCarChanged;
+
     protected override void Awake()
     {
+        if (Instance != null && Instance != this && Instance.carDatabase == null && this.carDatabase != null)
+        {
+            Destroy(Instance.gameObject);
+        }
+
         base.Awake();
         if (carDatabase == null)
         {
@@ -41,37 +63,128 @@ public class GarageManager : MonoSingleton<GarageManager>
 
     private void Start()
     {
+        if (!Application.isPlaying) return;
+        EnsureGarageCarController();
+        InitCameraOrbit();
         SpawnCar(currentCarIndex);
+        OnCarChanged?.Invoke(CurrentCarData);
     }
 
-    public void ShowCar(int index)
+    private void LateUpdate()
     {
-        if (carDatabase == null || carDatabase.cars == null || carDatabase.cars.Count == 0) return;
-        currentCarIndex = Mathf.Clamp(index, 0, carDatabase.cars.Count - 1);
-        SpawnCar(currentCarIndex);
+        if (!Application.isPlaying || garageCamera == null) return;
+
+        currentYaw = Mathf.Lerp(currentYaw, targetYaw, Time.deltaTime * orbitSmoothSpeed);
+
+        Vector3 targetCenter = (spawnPoint != null ? spawnPoint.position : (garageCarController != null ? garageCarController.transform.position : Vector3.zero)) + Vector3.up * cameraHeight;
+        Quaternion rotation = Quaternion.Euler(cameraPitch, currentYaw, 0f);
+        Vector3 desiredPosition = targetCenter + rotation * (Vector3.back * cameraDistance);
+
+        garageCamera.transform.position = desiredPosition;
+        garageCamera.transform.LookAt(targetCenter);
     }
 
-    public void NextCar()
+    private void InitCameraOrbit()
     {
-        if (carDatabase == null || carDatabase.cars == null || carDatabase.cars.Count == 0) return;
-        int next = (currentCarIndex + 1) % carDatabase.cars.Count;
-        ShowCar(next);
+        if (garageCamera == null)
+        {
+            // Auto find Camera that renders to RenderTexture or main camera
+            Camera[] cams = FindObjectsByType<Camera>(FindObjectsSortMode.None);
+            foreach (var cam in cams)
+            {
+                if (cam.targetTexture != null)
+                {
+                    garageCamera = cam;
+                    break;
+                }
+            }
+            if (garageCamera == null && Camera.main != null)
+            {
+                garageCamera = Camera.main;
+            }
+        }
+
+        if (garageCamera != null)
+        {
+            Vector3 center = (spawnPoint != null ? spawnPoint.position : Vector3.zero) + Vector3.up * cameraHeight;
+            Vector3 dir = garageCamera.transform.position - center;
+            cameraDistance = Mathf.Max(2f, new Vector3(dir.x, 0f, dir.z).magnitude);
+            if (cameraDistance > 0.01f)
+            {
+                defaultYaw = Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg + 180f;
+            }
+            targetYaw = defaultYaw;
+            currentYaw = defaultYaw;
+            isOrbitInitialized = true;
+        }
     }
 
-    public void PreviousCar()
+    public void RotateCameraOrbit(float deltaYaw)
     {
-        if (carDatabase == null || carDatabase.cars == null || carDatabase.cars.Count == 0) return;
-        int prev = (currentCarIndex - 1 + carDatabase.cars.Count) % carDatabase.cars.Count;
-        ShowCar(prev);
+        targetYaw += deltaYaw;
     }
 
-    private async void SpawnCar(int index)
+    public void ResetCameraOrbit(bool snap = false)
     {
+        targetYaw = defaultYaw;
+        if (snap)
+        {
+            currentYaw = defaultYaw;
+        }
+        if (garageCarController != null && spawnPoint != null)
+        {
+            garageCarController.transform.position = spawnPoint.position;
+            garageCarController.transform.rotation = spawnPoint.rotation;
+        }
+    }
+
+    private void EnsureGarageCarController()
+    {
+        if (garageCarController != null) return;
+
+        garageCarController = FindFirstObjectByType<CarController>();
+        if (garageCarController == null)
+        {
+            if (carControllerPrefab != null)
+            {
+                garageCarController = Instantiate(carControllerPrefab, spawnPoint != null ? spawnPoint.position : Vector3.zero, spawnPoint != null ? spawnPoint.rotation : Quaternion.identity);
+                garageCarController.gameObject.name = "Garage_CarController";
+            }
+            else
+            {
+                GameObject carGo = new GameObject("Garage_CarController");
+                if (spawnPoint != null)
+                {
+                    carGo.transform.position = spawnPoint.position;
+                    carGo.transform.rotation = spawnPoint.rotation;
+                }
+                garageCarController = carGo.AddComponent<CarController>();
+            }
+        }
+    }
+
+    public async void SpawnCar(int index)
+    {
+        if (!Application.isPlaying) return;
+
+        CarDatabaseSO db = carDatabase != null ? carDatabase : CarDatabaseSO.Instance;
+        if (db == null || db.cars == null || db.cars.Count == 0) return;
+
+        currentCarIndex = Mathf.Clamp(index, 0, db.cars.Count - 1);
         CarDataSO data = CurrentCarData;
         if (data == null) return;
 
         EnsureGarageCarController();
         if (garageCarController == null) return;
+
+        // Reset rotation to default spawn orientation
+        if (spawnPoint != null)
+        {
+            garageCarController.transform.position = spawnPoint.position;
+            garageCarController.transform.rotation = spawnPoint.rotation;
+        }
+
+        ResetCameraOrbit(true);
 
         garageCarController.autoLoadOnStart = false;
         garageCarController.controllerType = ControllerType.Menu;
@@ -106,52 +219,62 @@ public class GarageManager : MonoSingleton<GarageManager>
                 }
             }
 
-            ApplySavedUpgradesAndCustoms(data);
+            currentCustomizer.Initialize();
+            ApplySavedUpgradesAndCustoms(data, garageCarController);
         }
     }
 
-    private void EnsureGarageCarController()
+    public void ShowCar(int index)
     {
-        if (garageCarController != null) return;
+        if (!Application.isPlaying) return;
+        CarDatabaseSO db = carDatabase != null ? carDatabase : CarDatabaseSO.Instance;
+        if (db == null || db.cars == null || db.cars.Count == 0) return;
 
-        if (spawnPoint != null)
+        currentCarIndex = Mathf.Clamp(index, 0, db.cars.Count - 1);
+        SpawnCar(currentCarIndex);
+        OnCarChanged?.Invoke(CurrentCarData);
+    }
+
+    public void NextCar()
+    {
+        if (!Application.isPlaying) return;
+        CarDatabaseSO db = carDatabase != null ? carDatabase : CarDatabaseSO.Instance;
+        if (db == null || db.cars == null || db.cars.Count == 0) return;
+
+        int next = (currentCarIndex + 1) % db.cars.Count;
+        ShowCar(next);
+    }
+
+    public void PreviousCar()
+    {
+        if (!Application.isPlaying) return;
+        CarDatabaseSO db = carDatabase != null ? carDatabase : CarDatabaseSO.Instance;
+        if (db == null || db.cars == null || db.cars.Count == 0) return;
+
+        int prev = (currentCarIndex - 1 + db.cars.Count) % db.cars.Count;
+        ShowCar(prev);
+    }
+
+    public void ApplySavedUpgradesAndCustoms(CarDataSO data, CarController controller = null)
+    {
+        if (!Application.isPlaying) return;
+        if (data == null) return;
+        if (controller == null) controller = CurrentCarController;
+        if (controller == null) return;
+
+        RCCP_Customizer customizer = controller.carController != null ? controller.carController.Customizer : null;
+        if (customizer == null)
         {
-            garageCarController = spawnPoint.GetComponentInChildren<CarController>();
-            if (garageCarController == null)
+            customizer = controller.GetComponentInChildren<RCCP_Customizer>(true);
+            if (customizer == null && controller.carController != null)
             {
-                GameObject carGo = new GameObject("Garage_CarController");
-                carGo.transform.SetParent(spawnPoint, false);
-                carGo.transform.localPosition = Vector3.zero;
-                carGo.transform.localRotation = Quaternion.identity;
-                garageCarController = carGo.AddComponent<CarController>();
+                customizer = controller.carController.gameObject.AddComponent<RCCP_Customizer>();
             }
         }
-        else
-        {
-            garageCarController = FindObjectOfType<CarController>();
-            if (garageCarController == null)
-            {
-                GameObject carGo = new GameObject("Garage_CarController");
-                carGo.transform.position = Vector3.zero;
-                carGo.transform.rotation = Quaternion.identity;
-                garageCarController = carGo.AddComponent<CarController>();
-            }
-        }
-    }
 
-    private void UnloadCurrentCar()
-    {
-        if (garageCarController != null)
-        {
-            garageCarController.UnloadCurrentCar();
-        }
-        currentRCCPCar = null;
-        currentCustomizer = null;
-    }
+        if (customizer == null) return;
 
-    public void ApplySavedUpgradesAndCustoms(CarDataSO data)
-    {
-        if (data == null || currentCustomizer == null) return;
+        customizer.Initialize();
 
         string id = data.carID;
 
@@ -161,34 +284,36 @@ public class GarageManager : MonoSingleton<GarageManager>
         int brakeLvl = CarSaveManager.GetUpgradeLevel(id, UpgradeType.Brake);
         int speedLvl = CarSaveManager.GetUpgradeLevel(id, UpgradeType.Speed);
 
-        if (currentCustomizer.UpgradeManager != null)
+        if (customizer.UpgradeManager != null)
         {
-            currentCustomizer.UpgradeManager.UpgradeEngineWithoutSave(engineLvl);
-            currentCustomizer.UpgradeManager.UpgradeHandlingWithoutSave(handlingLvl);
-            currentCustomizer.UpgradeManager.UpgradeBrakeWithoutSave(brakeLvl);
-            currentCustomizer.UpgradeManager.UpgradeSpeedWithoutSave(speedLvl);
+            customizer.UpgradeManager.UpgradeEngineWithoutSave(engineLvl);
+            customizer.UpgradeManager.UpgradeHandlingWithoutSave(handlingLvl);
+            customizer.UpgradeManager.UpgradeBrakeWithoutSave(brakeLvl);
+            customizer.UpgradeManager.UpgradeSpeedWithoutSave(speedLvl);
         }
 
         // Customizations
-        if (carDatabase != null && carDatabase.customConfig != null)
-        {
-            CustomConfigSO cfg = carDatabase.customConfig;
+        CustomConfigSO cfg = (carDatabase != null && carDatabase.customConfig != null)
+            ? carDatabase.customConfig
+            : CustomConfigSO.Instance;
 
+        if (cfg != null)
+        {
             // Paint
             int paintIdx = CarSaveManager.GetCustomIndex(id, CustomType.Paint);
             if (paintIdx >= 0 && cfg.paints != null && paintIdx < cfg.paints.Length)
             {
-                if (currentCustomizer.PaintManager != null)
-                    currentCustomizer.PaintManager.PaintWithoutSave(cfg.paints[paintIdx].color);
+                if (customizer.PaintManager != null)
+                    customizer.PaintManager.PaintWithoutSave(cfg.paints[paintIdx].color);
             }
 
             // Wheels
             int wheelIdx = CarSaveManager.GetCustomIndex(id, CustomType.Wheels);
             if (wheelIdx >= 0 && cfg.wheels != null && wheelIdx < cfg.wheels.Length)
             {
-                if (currentCustomizer.WheelManager != null)
+                if (customizer.WheelManager != null)
                 {
-                    currentCustomizer.WheelManager.UpdateWheelWithoutSave(wheelIdx);
+                    customizer.WheelManager.UpdateWheelWithoutSave(wheelIdx);
                 }
             }
 
@@ -205,9 +330,9 @@ public class GarageManager : MonoSingleton<GarageManager>
                         break;
                     }
                 }
-                if (currentCustomizer.SpoilerManager != null)
+                if (customizer.SpoilerManager != null)
                 {
-                    currentCustomizer.SpoilerManager.UpgradeWithoutSave(spoilerConfigIdx);
+                    customizer.SpoilerManager.UpgradeWithoutSave(spoilerConfigIdx);
                 }
             }
 
@@ -215,13 +340,13 @@ public class GarageManager : MonoSingleton<GarageManager>
             int neonIdx = CarSaveManager.GetCustomIndex(id, CustomType.Neon);
             if (neonIdx >= 0 && cfg.neons != null && neonIdx < cfg.neons.Length)
             {
-                if (currentCustomizer.NeonManager != null)
+                if (customizer.NeonManager != null)
                 {
                     Material mat = cfg.neons[neonIdx].neonMat;
                     if (mat != null)
-                        currentCustomizer.NeonManager.UpgradeWithoutSave(mat);
+                        customizer.NeonManager.UpgradeWithoutSave(mat);
                     else
-                        currentCustomizer.NeonManager.Restore();
+                        customizer.NeonManager.Restore();
                 }
             }
         }
@@ -269,7 +394,7 @@ public class GarageManager : MonoSingleton<GarageManager>
         {
             int newLvl = currentLvl + 1;
             CarSaveManager.SetUpgradeLevel(id, type, newLvl);
-            ApplySavedUpgradesAndCustoms(data);
+            ApplySavedUpgradesAndCustoms(data, CurrentCarController);
             return true;
         }
 
@@ -323,7 +448,7 @@ public class GarageManager : MonoSingleton<GarageManager>
         {
             CarSaveManager.UnlockCustom(type, itemIndex);
             CarSaveManager.SetCustomIndex(id, type, itemIndex);
-            ApplySavedUpgradesAndCustoms(data);
+            ApplySavedUpgradesAndCustoms(data, CurrentCarController);
             return true;
         }
 

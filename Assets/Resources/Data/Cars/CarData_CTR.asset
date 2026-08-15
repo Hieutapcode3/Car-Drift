@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CarData_CTR
   m_EditorClassIdentifier: 
   carID: car_8
-  carName: Porsche CTR
+  carName: Redline CTR
   carType: 8
   rank: 4
   unlockCostGold: 40000

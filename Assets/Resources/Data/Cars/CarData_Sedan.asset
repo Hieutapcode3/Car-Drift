@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CarData_Sedan
   m_EditorClassIdentifier: 
   carID: car_1
-  carName: Sedan
+  carName: Street Phantom
   carType: 1
   rank: 1
   unlockCostGold: 3000

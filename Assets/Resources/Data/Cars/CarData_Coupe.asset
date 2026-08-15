@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CarData_Coupe
   m_EditorClassIdentifier: 
   carID: car_2
-  carName: Coupe
+  carName: Velocity
   carType: 2
   rank: 1
   unlockCostGold: 5000

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CarData_M3_E36
   m_EditorClassIdentifier: 
   carID: car_4
-  carName: BMW M3 E36
+  carName: Roadster E36
   carType: 4
   rank: 5
   unlockCostGold: 60000
