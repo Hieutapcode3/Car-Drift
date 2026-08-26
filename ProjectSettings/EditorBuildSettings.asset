@@ -4,7 +4,13 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/CarDrift/Scenes/MenuScene.unity
+    guid: f06c4c41a11651048af37c381d0d968c
+  - enabled: 1
+    path: Assets/CarDrift/Scenes/InGameScene.unity
+    guid: 4b848cddee672f14088356ae00e60f8b
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: f82f7e939cd5bac40a8f81e4a1170516, type: 2}
   m_UseUCBPForAssetBundles: 0

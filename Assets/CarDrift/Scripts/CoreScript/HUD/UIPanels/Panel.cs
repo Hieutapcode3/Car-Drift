@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using DG.Tweening;
@@ -69,7 +69,7 @@ public class Panel : MonoBehaviour, IPointerClickHandler
         gameObject.SetActive(true);
         if (popup != null)
         {
-            popup.DOScale(Vector3.one, timeToShow).SetEase(Ease.OutBack);
+            popup.DOScale(Vector3.one, timeToShow).SetEase(Ease.OutBack).SetUpdate(true);
             //SoundManager.instance.PlayEffect(SoundCommand.SFX_OPEN_POPUP_SCENE);
         }
 
@@ -79,7 +79,7 @@ public class Panel : MonoBehaviour, IPointerClickHandler
             Color colorRoot = imgPanel.color;
             colorRoot.a = 0;
             imgPanel.color = colorRoot;
-            imgPanel.DOColor(colorPanel, 1f).SetEase(Ease.Linear).OnComplete(() =>
+            imgPanel.DOColor(colorPanel, 1f).SetEase(Ease.Linear).SetUpdate(true).OnComplete(() =>
             {
                 _isClosed = false;
             });

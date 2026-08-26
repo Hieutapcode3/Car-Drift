@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b3c282abf52af74da0020e733b2fdbd, type: 3}
   m_Name: CarData_Coupe
   m_EditorClassIdentifier: 
-  carID: car_2
+  carID: car_1
   carName: Velocity
-  carType: 2
+  carType: 1
   rank: 1
   unlockCostGold: 5000
-  isUnlockedByDefault: 0
-  baseMaxSpeed: 267
-  baseTorque: 340
-  baseBrake: 2200
-  baseHandling: 1
+  isUnlockedByDefault: 1
+  baseMaxSpeed: 236
+  baseTorque: 360
+  baseBrake: 5000
+  baseHandling: 0.05

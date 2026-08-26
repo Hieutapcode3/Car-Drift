@@ -15,10 +15,10 @@ MonoBehaviour:
   carID: car_9
   carName: Apex F1
   carType: 9
-  rank: 3
-  unlockCostGold: 18000
+  rank: 5
+  unlockCostGold: 50000
   isUnlockedByDefault: 0
-  baseMaxSpeed: 316
+  baseMaxSpeed: 356
   baseTorque: 450
-  baseBrake: 3000
-  baseHandling: 1.4
+  baseBrake: 5000
+  baseHandling: 0.4

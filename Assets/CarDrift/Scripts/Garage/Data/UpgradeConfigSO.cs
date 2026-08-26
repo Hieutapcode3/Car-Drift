@@ -15,7 +15,11 @@ public struct UpgradeLevelData
     public int level;
     public int costGold;
     public int costSilver;
-    public float statBonus;
+    [Tooltip("Phần trăm tăng thêm so với chỉ số gốc của xe (VD: 4 = +4%, 20 = +20%)")]
+    public float percentBonus;
+
+    [Obsolete("Use percentBonus instead.")]
+    public float statBonus => percentBonus;
 }
 
 [CreateAssetMenu(fileName = "UpgradeConfig", menuName = "CarDrift/Upgrade Config")]
@@ -54,6 +58,36 @@ public class UpgradeConfigSO : ScriptableObject
         }
     }
 
+    /// <summary>
+    /// Lấy % tăng thêm tại cấp độ level (1..5). Nếu level <= 0 trả về 0%.
+    /// </summary>
+    public float GetPercentBonus(UpgradeType type, int level)
+    {
+        if (level <= 0) return 0f;
+        UpgradeLevelData data = GetUpgradeData(type, level - 1);
+        return data.percentBonus;
+    }
+
+    /// <summary>
+    /// Tính toán chỉ số sau khi nâng cấp: BaseStat * (1 + %bonus / 100)
+    /// </summary>
+    public float CalculateUpgradedStat(float baseStat, UpgradeType type, int level)
+    {
+        if (level <= 0) return baseStat;
+        float percent = GetPercentBonus(type, level);
+        return baseStat * (1f + percent / 100f);
+    }
+
+    /// <summary>
+    /// Tính toán lượng chỉ số cộng thêm: BaseStat * (%bonus / 100)
+    /// </summary>
+    public float CalculateBonusValue(float baseStat, UpgradeType type, int level)
+    {
+        if (level <= 0) return 0f;
+        float percent = GetPercentBonus(type, level);
+        return baseStat * (percent / 100f);
+    }
+
     private void Reset()
     {
         InitializeDefaultValues();
@@ -62,13 +96,14 @@ public class UpgradeConfigSO : ScriptableObject
     [ContextMenu("Populate Default Levels")]
     public void InitializeDefaultValues()
     {
-        engineLevels = CreateDefaultArray("Engine", 20f);
-        handlingLevels = CreateDefaultArray("Handling", 0.1f);
-        brakeLevels = CreateDefaultArray("Brake", 200f);
-        speedLevels = CreateDefaultArray("Speed", 10f);
+        // Mặc định mỗi cấp tăng 4% (Level 1: 4%, Level 2: 8%, ..., Level 5: 20%) khớp với efficiency 1.2 của RCCP
+        engineLevels = CreateDefaultArray(4f);
+        handlingLevels = CreateDefaultArray(4f);
+        brakeLevels = CreateDefaultArray(4f);
+        speedLevels = CreateDefaultArray(4f);
     }
 
-    private UpgradeLevelData[] CreateDefaultArray(string typeName, float baseBonus)
+    private UpgradeLevelData[] CreateDefaultArray(float percentPerLevel)
     {
         UpgradeLevelData[] arr = new UpgradeLevelData[MAX_LEVEL];
         for (int i = 0; i < MAX_LEVEL; i++)
@@ -78,7 +113,7 @@ public class UpgradeConfigSO : ScriptableObject
                 level = i + 1,
                 costGold = (i + 1) * 500,
                 costSilver = (i + 1) * 1000,
-                statBonus = (i + 1) * baseBonus
+                percentBonus = (i + 1) * percentPerLevel
             };
         }
         return arr;

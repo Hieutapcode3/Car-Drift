@@ -14941,7 +14941,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b0d083bf39edca24e86c33a1daf9f6ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CarController
-  carType: 13
+  carType: 1
   autoLoadOnStart: 1
   controllerType: 0
   isMenuModel: 0

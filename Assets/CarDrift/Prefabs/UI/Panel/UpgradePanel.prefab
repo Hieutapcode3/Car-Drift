@@ -1520,6 +1520,8 @@ MonoBehaviour:
   handlingUgBtn: {fileID: 1838646335470369483}
   brakeUgBtn: {fileID: 2102273866326917860}
   speedUgBtn: {fileID: 2954732432774272272}
+  activeProgressColor: {fileID: 17794095, guid: 980707532cf33464c97d5a5158832120, type: 3}
+  inactiveProgressColor: {fileID: -1009743890, guid: 9560c925ba066c0438cabd1dc128718c, type: 3}
 --- !u!1 &3156582129532748138
 GameObject:
   m_ObjectHideFlags: 0
@@ -2426,8 +2428,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 515, y: -71}
-  m_SizeDelta: {x: 406, y: 178}
+  m_AnchoredPosition: {x: 500.6786, y: -71}
+  m_SizeDelta: {x: 434.6428, y: 178}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3450689857857700614
 CanvasRenderer:

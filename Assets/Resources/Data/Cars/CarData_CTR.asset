@@ -15,10 +15,10 @@ MonoBehaviour:
   carID: car_8
   carName: Redline CTR
   carType: 8
-  rank: 4
-  unlockCostGold: 40000
+  rank: 5
+  unlockCostGold: 25500
   isUnlockedByDefault: 0
-  baseMaxSpeed: 354
-  baseTorque: 520
-  baseBrake: 3200
-  baseHandling: 1.3
+  baseMaxSpeed: 355
+  baseTorque: 550
+  baseBrake: 5000
+  baseHandling: 0.1

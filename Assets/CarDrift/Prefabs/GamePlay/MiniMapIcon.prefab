@@ -45,8 +45,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0281dd98a2cff894a8d3153f87194306, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PlayerIcon: {fileID: 21300000, guid: 83974f0a95d07a246965ce096e514150, type: 3}
-  EnemyIcon: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
+  PlayerIcon: {fileID: 21300000, guid: b8d54774e29f750459da815c0ac910bf, type: 3}
+  EnemyIcon: {fileID: 21300000, guid: a1a2ec9cfa50b5942a37ea074715fc7f, type: 3}
   iconRenderer: {fileID: 3425348542860312090}
 --- !u!212 &3425348542860312090
 SpriteRenderer:

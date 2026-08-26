@@ -24046,7 +24046,7 @@ MonoBehaviour:
   engineStarting: 0
   engineRPM: 0
   minEngineRPM: 800
-  maxEngineRPM: 8000
+  maxEngineRPM: 7000
   engineAccelerationRate: 0.75
   engineCouplingToWheelsRate: 1.5
   engineDecelerationRate: 0.35
@@ -24072,7 +24072,7 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 8000
+      time: 7000
       value: 0.85
       inSlope: 0
       outSlope: 0

@@ -27,4 +27,10 @@ public class CarDatabaseSO : ScriptableObject
         if (cars == null) return null;
         return cars.Find(c => c != null && c.carID == id);
     }
+
+    public CarDataSO GetCarByType(CarType type)
+    {
+        if (cars == null) return null;
+        return cars.Find(c => c != null && c.carType == type);
+    }
 }

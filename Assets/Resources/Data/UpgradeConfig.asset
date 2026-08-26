@@ -16,83 +16,83 @@ MonoBehaviour:
   - level: 1
     costGold: 500
     costSilver: 1000
-    statBonus: 20
+    percentBonus: 4
   - level: 2
     costGold: 1000
     costSilver: 2000
-    statBonus: 40
+    percentBonus: 8
   - level: 3
     costGold: 1500
     costSilver: 3000
-    statBonus: 60
+    percentBonus: 12
   - level: 4
     costGold: 2000
     costSilver: 4000
-    statBonus: 80
+    percentBonus: 16
   - level: 5
     costGold: 2500
     costSilver: 5000
-    statBonus: 100
+    percentBonus: 20
   handlingLevels:
   - level: 1
     costGold: 500
     costSilver: 1000
-    statBonus: 0.1
+    percentBonus: 4
   - level: 2
     costGold: 1000
     costSilver: 2000
-    statBonus: 0.2
+    percentBonus: 8
   - level: 3
     costGold: 1500
     costSilver: 3000
-    statBonus: 0.3
+    percentBonus: 12
   - level: 4
     costGold: 2000
     costSilver: 4000
-    statBonus: 0.4
+    percentBonus: 16
   - level: 5
     costGold: 2500
     costSilver: 5000
-    statBonus: 0.5
+    percentBonus: 20
   brakeLevels:
   - level: 1
     costGold: 500
     costSilver: 1000
-    statBonus: 200
+    percentBonus: 4
   - level: 2
     costGold: 1000
     costSilver: 2000
-    statBonus: 400
+    percentBonus: 8
   - level: 3
     costGold: 1500
     costSilver: 3000
-    statBonus: 600
+    percentBonus: 12
   - level: 4
     costGold: 2000
     costSilver: 4000
-    statBonus: 800
+    percentBonus: 16
   - level: 5
     costGold: 2500
     costSilver: 5000
-    statBonus: 1000
+    percentBonus: 20
   speedLevels:
   - level: 1
     costGold: 500
     costSilver: 1000
-    statBonus: 10
+    percentBonus: 4
   - level: 2
     costGold: 1000
     costSilver: 2000
-    statBonus: 20
+    percentBonus: 8
   - level: 3
     costGold: 1500
     costSilver: 3000
-    statBonus: 30
+    percentBonus: 12
   - level: 4
     costGold: 2000
     costSilver: 4000
-    statBonus: 40
+    percentBonus: 16
   - level: 5
     costGold: 2500
     costSilver: 5000
-    statBonus: 50
+    percentBonus: 20

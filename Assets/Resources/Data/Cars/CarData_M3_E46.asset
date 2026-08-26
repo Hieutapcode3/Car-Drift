@@ -15,10 +15,10 @@ MonoBehaviour:
   carID: car_5
   carName: Driftline E46
   carType: 5
-  rank: 5
-  unlockCostGold: 50000
+  rank: 3
+  unlockCostGold: 13500
   isUnlockedByDefault: 0
-  baseMaxSpeed: 365
-  baseTorque: 540
-  baseBrake: 3400
-  baseHandling: 1.4
+  baseMaxSpeed: 320
+  baseTorque: 375
+  baseBrake: 5000
+  baseHandling: 0.075

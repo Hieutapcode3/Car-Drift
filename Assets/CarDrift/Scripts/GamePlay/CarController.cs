@@ -48,7 +48,16 @@ public class CarController : MonoBehaviour
     private GameObject currentCarInstance;
     private AsyncOperationHandle<GameObject> loadHandle;
     public TextMeshPro SpawnedIndexRaceText => spawnedIndexRaceText;
-    public bool IsMenuModel => isMenuModel || controllerType == ControllerType.Menu;
+    public bool IsMenuModel
+    {
+        get
+        {
+            if (controllerType == ControllerType.Menu) return true;
+            if (!isMenuModel) return false;
+            string activeScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            return activeScene.Contains("Menu") || activeScene.Contains("Garage");
+        }
+    }
 
     #region Race Status Properties
     public int CurrentWaypointIndex
@@ -126,14 +135,19 @@ public class CarController : MonoBehaviour
     [Button]
     public void ApplyCarColor()
     {
-        if (carColorType == CarColorType.Default)
-        {
-            carController?.Customizer.PaintManager?.Restore();
-            return;
-        }
-
         if (carController == null)
             FetchReferences();
+
+        if (carController != null && carController.Customizer != null)
+        {
+            carController.Customizer.autoSave = false;
+        }
+
+        if (carColorType == CarColorType.Default)
+        {
+            carController?.Customizer?.PaintManager?.Restore();
+            return;
+        }
 
         Color? targetColor = GetCurrentColor();
         if (targetColor == null)
@@ -146,7 +160,7 @@ public class CarController : MonoBehaviour
             {
                 paintManager.GetAllPainters();
             }
-            paintManager.Paint(targetColor.Value);
+            paintManager.PaintWithoutSave(targetColor.Value);
         }
         else
         {
@@ -209,17 +223,37 @@ public class CarController : MonoBehaviour
     {
         _ = LoadCarModelAsync(carType);
     }
+
+    private int currentLoadRequestId = 0;
+
     public async Task LoadCarModelAsync(CarType newCarType)
     {
         carType = newCarType;
         string addressKey = carType.ToString();
+        int thisRequestId = ++currentLoadRequestId;
 
         // Debug.Log($"[CarController] Đang tiến hành load model xe với Address Key: '{addressKey}'...");
         UnloadCurrentCar();
         try
         {
-            loadHandle = Addressables.InstantiateAsync(addressKey, transform);
-            currentCarInstance = await loadHandle.Task;
+            var opHandle = Addressables.InstantiateAsync(addressKey, transform);
+            GameObject instance = await opHandle.Task;
+
+            // Nếu trong lúc chờ tải đã có một yêu cầu tải xe khác mới hơn
+            if (thisRequestId != currentLoadRequestId)
+            {
+                if (instance != null)
+                {
+                    if (opHandle.IsValid())
+                        Addressables.ReleaseInstance(instance);
+                    else
+                        Destroy(instance);
+                }
+                return;
+            }
+
+            loadHandle = opHandle;
+            currentCarInstance = instance;
 
             if (loadHandle.Status == AsyncOperationStatus.Failed || currentCarInstance == null)
             {
@@ -262,16 +296,18 @@ public class CarController : MonoBehaviour
 
         if (customizer != null)
         {
+            customizer.autoSave = false;
             customizer.Initialize();
+            customizer.autoSave = false;
 
             CarDataSO carData = null;
-            if (GarageManager.Instance != null && GarageManager.Instance.CurrentCarData != null)
+            if (CarDatabaseSO.Instance != null)
             {
-                carData = GarageManager.Instance.CurrentCarData;
-            }
-            if (carData == null && CarDatabaseSO.Instance != null)
-            {
-                carData = CarDatabaseSO.Instance.GetCarByIndex(CarSaveManager.GetSelectedCarIndex());
+                carData = CarDatabaseSO.Instance.GetCarByType(carType);
+                if (carData == null)
+                {
+                    carData = CarDatabaseSO.Instance.GetCarByIndex(CarSaveManager.GetSelectedCarIndex());
+                }
             }
 
             if (carData != null)
@@ -293,8 +329,8 @@ public class CarController : MonoBehaviour
                 }
 
                 // Customizations
-                CustomConfigSO cfg = (GarageManager.Instance != null && GarageManager.Instance.carDatabase != null && GarageManager.Instance.carDatabase.customConfig != null)
-                    ? GarageManager.Instance.carDatabase.customConfig
+                CustomConfigSO cfg = (CarDatabaseSO.Instance != null && CarDatabaseSO.Instance.customConfig != null)
+                    ? CarDatabaseSO.Instance.customConfig
                     : CustomConfigSO.Instance;
 
                 if (cfg != null)
@@ -306,6 +342,11 @@ public class CarController : MonoBehaviour
                         if (customizer.PaintManager != null)
                             customizer.PaintManager.PaintWithoutSave(cfg.paints[paintIdx].color);
                     }
+                    else
+                    {
+                        if (customizer.PaintManager != null)
+                            customizer.PaintManager.Restore();
+                    }
 
                     // Wheels
                     int wheelIdx = CarSaveManager.GetCustomIndex(id, CustomType.Wheels);
@@ -315,6 +356,11 @@ public class CarController : MonoBehaviour
                         {
                             customizer.WheelManager.UpdateWheelWithoutSave(wheelIdx);
                         }
+                    }
+                    else
+                    {
+                        if (customizer.WheelManager != null)
+                            customizer.WheelManager.Restore();
                     }
 
                     // Spoiler
@@ -335,6 +381,11 @@ public class CarController : MonoBehaviour
                             customizer.SpoilerManager.UpgradeWithoutSave(spoilerConfigIdx);
                         }
                     }
+                    else
+                    {
+                        if (customizer.SpoilerManager != null)
+                            customizer.SpoilerManager.Restore();
+                    }
 
                     // Neon
                     int neonIdx = CarSaveManager.GetCustomIndex(id, CustomType.Neon);
@@ -348,6 +399,11 @@ public class CarController : MonoBehaviour
                             else
                                 customizer.NeonManager.Restore();
                         }
+                    }
+                    else
+                    {
+                        if (customizer.NeonManager != null)
+                            customizer.NeonManager.Restore();
                     }
                 }
             }
@@ -377,6 +433,7 @@ public class CarController : MonoBehaviour
 
         if (currentCarInstance != null)
         {
+            currentCarInstance.SetActive(false);
             if (loadHandle.IsValid())
             {
                 Addressables.ReleaseInstance(currentCarInstance);
@@ -389,8 +446,9 @@ public class CarController : MonoBehaviour
         }
         foreach (Transform child in transform)
         {
-            if (child.GetComponent<RCCP_CarController>() != null)
+            if (child.GetComponent<RCCP_CarController>() != null || child.GetComponentInChildren<RCCP_CarController>() != null)
             {
+                child.gameObject.SetActive(false);
                 Destroy(child.gameObject);
             }
         }
@@ -628,11 +686,22 @@ public class CarController : MonoBehaviour
                 foreach (RCCP_DetachablePart part in detachableParts)
                 {
                     part.enabled = false;
-                    Rigidbody partRb = part.GetComponent<Rigidbody>();
-                    if (partRb != null)
+
+                    if (part.TryGetComponent(out UnityEngine.Animations.ParentConstraint pc))
                     {
-                        partRb.isKinematic = true;
-                        partRb.useGravity = false;
+                        pc.constraintActive = false;
+                        Destroy(pc);
+                    }
+
+                    if (part.TryGetComponent(out ConfigurableJoint cj))
+                    {
+                        cj.connectedBody = null;
+                        Destroy(cj);
+                    }
+
+                    if (part.TryGetComponent(out Rigidbody partRb))
+                    {
+                        Destroy(partRb);
                     }
                 }
             }
@@ -681,16 +750,21 @@ public class CarController : MonoBehaviour
             GetOrCreateAIController();
             if (aiController != null)
             {
-                aiController.enabled = isAIActive;
+                if (aiController.waypointsContainer == null && RaceProgressTracker.Instance != null && RaceProgressTracker.Instance.waypointsContainer != null)
+                {
+                    aiController.waypointsContainer = RaceProgressTracker.Instance.waypointsContainer;
+                }
+                aiController.enabled = isPlaying;
                 if (isPlaying)
                 {
+                    aiController.Reload();
                     ApplyAIDifficulty(aiDifficulty);
                 }
             }
             if (carController != null)
             {
                 carController.externalControl = true;
-                carController.SetCanControl(isAIActive);
+                carController.SetCanControl(isPlaying);
             }
 
             if (randomColorForAI)
@@ -717,11 +791,11 @@ public class CarController : MonoBehaviour
             if (carController != null)
             {
                 carController.externalControl = !isPlaying;
-                carController.SetCanControl(isAIActive);
+                carController.SetCanControl(isPlaying || isFinished);
 
                 if (RCCP_SceneManager.Instance != null)
                 {
-                    RCCP_SceneManager.Instance.RegisterPlayer(carController, isAIActive);
+                    RCCP_SceneManager.Instance.RegisterPlayer(carController, isPlaying);
                     Debug.Log("Can controller: " + isPlaying);
                     if (GameManager.Instance != null)
                     {
@@ -788,36 +862,20 @@ public class CarController : MonoBehaviour
         if (isPhysicsFrozen == freeze) return;
         isPhysicsFrozen = freeze;
 
-        if (cachedRigidbodies == null || cachedRigidbodies.Length == 0)
-            CacheRigidbodies();
+        if (carController == null)
+            FetchReferences();
 
-        if (freeze)
+        Rigidbody mainRb = carController != null ? carController.Rigid : GetComponent<Rigidbody>();
+        if (mainRb == null)
+            mainRb = GetComponentInChildren<Rigidbody>();
+
+        if (mainRb != null)
         {
-            for (int i = 0; i < cachedRigidbodies.Length; i++)
+            if (freeze)
             {
-                var rb = cachedRigidbodies[i];
-                if (rb == null) continue;
-                if (!rb.isKinematic && !savedVelocities.ContainsKey(rb))
-                {
-                    savedVelocities[rb] = new PhysicsState { velocity = rb.linearVelocity, angularVelocity = rb.angularVelocity };
-                }
-                rb.isKinematic = true;
+                mainRb.linearVelocity = Vector3.zero;
+                mainRb.angularVelocity = Vector3.zero;
             }
-        }
-        else
-        {
-            for (int i = 0; i < cachedRigidbodies.Length; i++)
-            {
-                var rb = cachedRigidbodies[i];
-                if (rb == null) continue;
-                rb.isKinematic = false;
-                if (savedVelocities.TryGetValue(rb, out var saved))
-                {
-                    rb.linearVelocity = saved.velocity;
-                    rb.angularVelocity = saved.angularVelocity;
-                }
-            }
-            savedVelocities.Clear();
         }
     }
 

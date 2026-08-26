@@ -14,6 +14,7 @@ public class GameManager : MonoSingleton<GameManager>
     [SerializeField] private GameObject introObj;
     [SerializeField] private RCCP_ShowroomCamera showroomCamera;
     [Title("MiniMap Settings")]
+    [SerializeField] private MiniMapFollow miniMapFollow;
     [SerializeField] private CinemachineVirtualCamera miniMapCamera;
 
     [Title("Countdown Settings")]
@@ -37,9 +38,15 @@ public class GameManager : MonoSingleton<GameManager>
 
     void Start()
     {
+        SetGameState(GameState.Loading);
+        RCCP_UIManager.Instance.dashboard.gameObject.SetActive(false);
         if (playIntroOnStart)
         {
-            PlayIntro();
+            var loadingPanel = (HUDSystem.Instance != null) ? HUDSystem.Instance.GetActivePanel<LoadingPanel>() : null;
+            if (loadingPanel == null || !loadingPanel.gameObject.activeInHierarchy)
+            {
+                PlayIntro();
+            }
         }
     }
 
@@ -145,15 +152,19 @@ public class GameManager : MonoSingleton<GameManager>
 
     public void SetMiniMapFollowPlayer()
     {
-        if (miniMapCamera == null) return;
-
         Transform playerTransform = null;
         if (RCCP_SceneManager.Instance != null && RCCP_SceneManager.Instance.activePlayerVehicle != null)
         {
             playerTransform = RCCP_SceneManager.Instance.activePlayerVehicle.transform;
         }
 
-        if (playerTransform != null)
+        if (playerTransform == null) return;
+
+        if (miniMapFollow != null)
+        {
+            miniMapFollow.SetTarget(playerTransform);
+        }
+        else if (miniMapCamera != null)
         {
             miniMapCamera.Follow = playerTransform;
         }

@@ -1,8 +1,9 @@
-using UnityCommunity.UnitySingleton;
 using UnityEngine;
 
-public class GarageManager : MonoSingleton<GarageManager>
+public class GarageManager : MonoBehaviour
 {
+    public static GarageManager Instance { get; private set; }
+
     [Header("Database Reference")]
     public CarDatabaseSO carDatabase;
 
@@ -28,6 +29,11 @@ public class GarageManager : MonoSingleton<GarageManager>
     private float defaultYaw = 0f;
     private bool isOrbitInitialized = false;
 
+    [Header("Menu Loading Settings")]
+    [Tooltip("Hiển thị LoadingPanel khi khởi chạy MenuScene lần đầu")]
+    [SerializeField] private bool showLoadingOnStart = true;
+    public static bool hasCompletedInitialMenuLoading = false;
+
     public int CurrentCarIndex => currentCarIndex;
     public CarDataSO CurrentCarData
     {
@@ -46,14 +52,21 @@ public class GarageManager : MonoSingleton<GarageManager>
 
     public static event System.Action<CarDataSO> OnCarChanged;
 
-    protected override void Awake()
+    public static bool IsInGarageScene()
     {
-        if (Instance != null && Instance != this && Instance.carDatabase == null && this.carDatabase != null)
-        {
-            Destroy(Instance.gameObject);
-        }
+        string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        return sceneName.Contains("Menu") || sceneName.Contains("Garage");
+    }
 
-        base.Awake();
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+
         if (carDatabase == null)
         {
             carDatabase = CarDatabaseSO.Instance;
@@ -61,22 +74,102 @@ public class GarageManager : MonoSingleton<GarageManager>
         currentCarIndex = CarSaveManager.GetSelectedCarIndex();
     }
 
-    private void Start()
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+    }
+
+    private async void Start()
     {
         if (!Application.isPlaying) return;
-        EnsureGarageCarController();
-        InitCameraOrbit();
-        SpawnCar(currentCarIndex);
-        OnCarChanged?.Invoke(CurrentCarData);
+        if (!IsInGarageScene()) return;
+
+        if (showLoadingOnStart && !hasCompletedInitialMenuLoading)
+        {
+            await InitializeMenuSceneWithLoadingAsync();
+        }
+        else
+        {
+            EnsureGarageCarController();
+            InitCameraOrbit();
+            SpawnCar(currentCarIndex);
+            OnCarChanged?.Invoke(CurrentCarData);
+        }
+    }
+
+    public async System.Threading.Tasks.Task InitializeMenuSceneWithLoadingAsync()
+    {
+        LoadingPanel loadingPanel = null;
+        if (HUDSystem.Instance != null)
+        {
+            loadingPanel = HUDSystem.Instance.Show<LoadingPanel>();
+            HUDSystem.Instance.Hide<MenuPanel>();
+        }
+
+        try
+        {
+            loadingPanel?.SetProgress(0.05f, "Initializing Game Assets...");
+
+            // 1. Khởi tạo Addressables hệ thống
+            var initHandle = UnityEngine.AddressableAssets.Addressables.InitializeAsync();
+            while (!initHandle.IsDone)
+            {
+                float p = 0.05f + (initHandle.PercentComplete * 0.35f);
+                loadingPanel?.SetProgress(p, "Loading Game Assets...");
+                await System.Threading.Tasks.Task.Yield();
+            }
+
+            loadingPanel?.SetProgress(0.40f, "Loading Garage Database...");
+
+            // 2. Khởi tạo Database & Setup Camera Orbit
+            if (carDatabase == null)
+            {
+                carDatabase = CarDatabaseSO.Instance;
+            }
+            EnsureGarageCarController();
+            InitCameraOrbit();
+
+            // 3. Tải Model xe đã chọn trong Garage với tiến trình %
+            await SpawnCarAsync(currentCarIndex, (p, msg) =>
+            {
+                float totalProgress = 0.40f + (p * 0.55f); // 40% -> 95%
+                loadingPanel?.SetProgress(totalProgress, msg);
+            });
+
+            loadingPanel?.SetProgress(1.0f, "Ready!");
+            if (loadingPanel != null)
+            {
+                await loadingPanel.WaitForVisualProgressAsync();
+            }
+
+            await System.Threading.Tasks.Task.Delay(150);
+            hasCompletedInitialMenuLoading = true;
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"[GarageManager] Lỗi trong quá trình khởi tạo MenuScene: {ex.Message}");
+        }
+        finally
+        {
+            if (HUDSystem.Instance != null)
+            {
+                HUDSystem.Instance.Hide<LoadingPanel>();
+                HUDSystem.Instance.Show<MenuPanel>();
+            }
+            OnCarChanged?.Invoke(CurrentCarData);
+        }
     }
 
     private void LateUpdate()
     {
-        if (!Application.isPlaying || garageCamera == null) return;
+        if (!Application.isPlaying || !IsInGarageScene() || garageCamera == null || spawnPoint == null || garageCarController == null) return;
 
         currentYaw = Mathf.Lerp(currentYaw, targetYaw, Time.deltaTime * orbitSmoothSpeed);
 
-        Vector3 targetCenter = (spawnPoint != null ? spawnPoint.position : (garageCarController != null ? garageCarController.transform.position : Vector3.zero)) + Vector3.up * cameraHeight;
+        Vector3 targetCenter = spawnPoint.position + Vector3.up * cameraHeight;
         Quaternion rotation = Quaternion.Euler(cameraPitch, currentYaw, 0f);
         Vector3 desiredPosition = targetCenter + rotation * (Vector3.back * cameraDistance);
 
@@ -86,19 +179,17 @@ public class GarageManager : MonoSingleton<GarageManager>
 
     private void InitCameraOrbit()
     {
+        if (!IsInGarageScene()) return;
+
         if (garageCamera == null)
         {
-            // Auto find Camera that renders to RenderTexture or main camera
-            Camera[] cams = FindObjectsByType<Camera>(FindObjectsSortMode.None);
-            foreach (var cam in cams)
+            // Only find Camera specifically named GarageCamera or MainCamera in Garage scene
+            GameObject gCam = GameObject.Find("GarageCamera") ?? GameObject.Find("Garage_Camera");
+            if (gCam != null)
             {
-                if (cam.targetTexture != null)
-                {
-                    garageCamera = cam;
-                    break;
-                }
+                garageCamera = gCam.GetComponent<Camera>();
             }
-            if (garageCamera == null && Camera.main != null)
+            else if (Camera.main != null && spawnPoint != null)
             {
                 garageCamera = Camera.main;
             }
@@ -121,11 +212,13 @@ public class GarageManager : MonoSingleton<GarageManager>
 
     public void RotateCameraOrbit(float deltaYaw)
     {
+        if (!IsInGarageScene()) return;
         targetYaw += deltaYaw;
     }
 
     public void ResetCameraOrbit(bool snap = false)
     {
+        if (!IsInGarageScene()) return;
         targetYaw = defaultYaw;
         if (snap)
         {
@@ -140,32 +233,43 @@ public class GarageManager : MonoSingleton<GarageManager>
 
     private void EnsureGarageCarController()
     {
+        if (!IsInGarageScene()) return;
         if (garageCarController != null) return;
 
-        garageCarController = FindFirstObjectByType<CarController>();
-        if (garageCarController == null)
+        GameObject existingGarageCar = GameObject.Find("Garage_CarController");
+        if (existingGarageCar != null)
+        {
+            garageCarController = existingGarageCar.GetComponent<CarController>();
+        }
+
+        if (garageCarController == null && spawnPoint != null)
         {
             if (carControllerPrefab != null)
             {
-                garageCarController = Instantiate(carControllerPrefab, spawnPoint != null ? spawnPoint.position : Vector3.zero, spawnPoint != null ? spawnPoint.rotation : Quaternion.identity);
+                garageCarController = Instantiate(carControllerPrefab, spawnPoint.position, spawnPoint.rotation);
                 garageCarController.gameObject.name = "Garage_CarController";
             }
             else
             {
                 GameObject carGo = new GameObject("Garage_CarController");
-                if (spawnPoint != null)
-                {
-                    carGo.transform.position = spawnPoint.position;
-                    carGo.transform.rotation = spawnPoint.rotation;
-                }
+                carGo.transform.position = spawnPoint.position;
+                carGo.transform.rotation = spawnPoint.rotation;
                 garageCarController = carGo.AddComponent<CarController>();
             }
         }
     }
 
-    public async void SpawnCar(int index)
+    private int currentSpawnRequestId = 0;
+
+    public void SpawnCar(int index)
+    {
+        _ = SpawnCarAsync(index);
+    }
+
+    public async System.Threading.Tasks.Task SpawnCarAsync(int index, System.Action<float, string> onProgress = null)
     {
         if (!Application.isPlaying) return;
+        if (!IsInGarageScene()) return;
 
         CarDatabaseSO db = carDatabase != null ? carDatabase : CarDatabaseSO.Instance;
         if (db == null || db.cars == null || db.cars.Count == 0) return;
@@ -173,6 +277,10 @@ public class GarageManager : MonoSingleton<GarageManager>
         currentCarIndex = Mathf.Clamp(index, 0, db.cars.Count - 1);
         CarDataSO data = CurrentCarData;
         if (data == null) return;
+
+        int thisSpawnId = ++currentSpawnRequestId;
+
+        onProgress?.Invoke(0.1f, $"Preparing {data.carName}...");
 
         EnsureGarageCarController();
         if (garageCarController == null) return;
@@ -190,7 +298,16 @@ public class GarageManager : MonoSingleton<GarageManager>
         garageCarController.controllerType = ControllerType.Menu;
         garageCarController.isMenuModel = true;
 
+        onProgress?.Invoke(0.35f, $"Loading Model ({data.carType})...");
         await garageCarController.LoadCarModelAsync(data.carType);
+
+        // Nếu trong lúc chờ load đã có yêu cầu spawn xe mới hơn thì bỏ qua
+        if (thisSpawnId != currentSpawnRequestId)
+        {
+            return;
+        }
+
+        onProgress?.Invoke(0.8f, $"Configuring {data.carName}...");
 
         // Khóa toàn bộ Rigidbody trên xe mô hình trong Garage
         Rigidbody[] allRbs = garageCarController.GetComponentsInChildren<Rigidbody>(true);
@@ -219,9 +336,13 @@ public class GarageManager : MonoSingleton<GarageManager>
                 }
             }
 
+            currentCustomizer.autoSave = false;
             currentCustomizer.Initialize();
+            currentCustomizer.autoSave = false;
             ApplySavedUpgradesAndCustoms(data, garageCarController);
         }
+
+        onProgress?.Invoke(1.0f, $"Loaded {data.carName}");
     }
 
     public void ShowCar(int index)
@@ -306,6 +427,11 @@ public class GarageManager : MonoSingleton<GarageManager>
                 if (customizer.PaintManager != null)
                     customizer.PaintManager.PaintWithoutSave(cfg.paints[paintIdx].color);
             }
+            else
+            {
+                if (customizer.PaintManager != null)
+                    customizer.PaintManager.Restore();
+            }
 
             // Wheels
             int wheelIdx = CarSaveManager.GetCustomIndex(id, CustomType.Wheels);
@@ -315,6 +441,11 @@ public class GarageManager : MonoSingleton<GarageManager>
                 {
                     customizer.WheelManager.UpdateWheelWithoutSave(wheelIdx);
                 }
+            }
+            else
+            {
+                if (customizer.WheelManager != null)
+                    customizer.WheelManager.Restore();
             }
 
             // Spoiler
@@ -335,6 +466,11 @@ public class GarageManager : MonoSingleton<GarageManager>
                     customizer.SpoilerManager.UpgradeWithoutSave(spoilerConfigIdx);
                 }
             }
+            else
+            {
+                if (customizer.SpoilerManager != null)
+                    customizer.SpoilerManager.Restore();
+            }
 
             // Neon
             int neonIdx = CarSaveManager.GetCustomIndex(id, CustomType.Neon);
@@ -348,6 +484,11 @@ public class GarageManager : MonoSingleton<GarageManager>
                     else
                         customizer.NeonManager.Restore();
                 }
+            }
+            else
+            {
+                if (customizer.NeonManager != null)
+                    customizer.NeonManager.Restore();
             }
         }
     }

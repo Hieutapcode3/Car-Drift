@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b3c282abf52af74da0020e733b2fdbd, type: 3}
   m_Name: CarData_Sedan
   m_EditorClassIdentifier: 
-  carID: car_1
+  carID: car_2
   carName: Street Phantom
-  carType: 1
+  carType: 2
   rank: 1
-  unlockCostGold: 3000
-  isUnlockedByDefault: 1
-  baseMaxSpeed: 257
-  baseTorque: 320
-  baseBrake: 2100
-  baseHandling: 1
+  unlockCostGold: 3200
+  isUnlockedByDefault: 0
+  baseMaxSpeed: 267
+  baseTorque: 520
+  baseBrake: 4500
+  baseHandling: 0.075

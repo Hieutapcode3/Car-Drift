@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b3c282abf52af74da0020e733b2fdbd, type: 3}
   m_Name: CarData_M3_E36
   m_EditorClassIdentifier: 
-  carID: car_4
+  carID: car_7
   carName: Roadster E36
-  carType: 4
-  rank: 5
-  unlockCostGold: 60000
+  carType: 7
+  rank: 4
+  unlockCostGold: 18100
   isUnlockedByDefault: 0
-  baseMaxSpeed: 386
-  baseTorque: 560
-  baseBrake: 3600
-  baseHandling: 1.5
+  baseMaxSpeed: 338
+  baseTorque: 350
+  baseBrake: 5000
+  baseHandling: 0.075

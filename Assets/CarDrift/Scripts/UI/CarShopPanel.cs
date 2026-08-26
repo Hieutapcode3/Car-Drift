@@ -11,9 +11,21 @@ public class CarShopPanel : Panel<CarShopPanel>
 
     [Title("Car Info")]
     [SerializeField] private TextMeshProUGUI carNameTxt;
+    [SerializeField] private TextMeshProUGUI carRankTxt;
     [SerializeField] private TextMeshProUGUI carPriceTxt;
     [SerializeField] private Button buyBtn;
     [SerializeField] private Button selectBtn;
+    [SerializeField] private TextMeshProUGUI selectBtnTxt;
+
+    [Title("Parameters")]
+    [SerializeField] private TextMeshProUGUI carSpeedTxt;
+    [SerializeField] private Image carSpeedFillImg;
+    [SerializeField] private TextMeshProUGUI carTorqueTxt;
+    [SerializeField] private Image carTorqueFillImg;
+    [SerializeField] private TextMeshProUGUI carBrakeTxt;
+    [SerializeField] private Image carBrakeFillImg;
+    [SerializeField] private TextMeshProUGUI carHandlingTxt;
+    [SerializeField] private Image carHandlingFillImg;
 
     [Title("Navigation")]
     [SerializeField] private Button nextCarBtn;
@@ -24,9 +36,16 @@ public class CarShopPanel : Panel<CarShopPanel>
 
     protected override void Awake()
     {
+        base.Awake();
+
         if (carRenderRawImage != null && carRenderRawImage.GetComponent<CarRotateDragHandler>() == null)
         {
             carRenderRawImage.gameObject.AddComponent<CarRotateDragHandler>();
+        }
+
+        if (selectBtn != null && selectBtnTxt == null)
+        {
+            selectBtnTxt = selectBtn.GetComponentInChildren<TextMeshProUGUI>(true);
         }
 
         if (nextCarBtn != null) nextCarBtn.onClick.AddListener(OnClickNextCar);
@@ -40,6 +59,7 @@ public class CarShopPanel : Panel<CarShopPanel>
         if (!Application.isPlaying) return;
 
         CurrencyManager.OnCurrencyChanged += UpdateCurrencyUI;
+        CarSaveManager.OnCustomizationUpdated += RefreshCustomization;
         GarageManager.OnCarChanged += RefreshCarShopUI;
 
         UpdateCurrencyUI(CurrencyManager.Gold, CurrencyManager.Silver);
@@ -55,7 +75,13 @@ public class CarShopPanel : Panel<CarShopPanel>
         if (!Application.isPlaying) return;
 
         CurrencyManager.OnCurrencyChanged -= UpdateCurrencyUI;
+        CarSaveManager.OnCustomizationUpdated -= RefreshCustomization;
         GarageManager.OnCarChanged -= RefreshCarShopUI;
+    }
+
+    private void RefreshCustomization()
+    {
+        RefreshCarShopUI(null);
     }
 
     public void RefreshCarShopUI(CarDataSO data)
@@ -67,9 +93,11 @@ public class CarShopPanel : Panel<CarShopPanel>
         if (data == null) return;
 
         if (carNameTxt != null) carNameTxt.text = data.carName;
+        if (carRankTxt != null) carRankTxt.text = data.rank.ToString();
 
         bool isUnlocked = CarSaveManager.IsCarUnlocked(data);
-        bool isSelected = CarSaveManager.GetSelectedCarIndex() == (GarageManager.Instance != null ? GarageManager.Instance.CurrentCarIndex : 0);
+        int currentIdx = GarageManager.Instance != null ? GarageManager.Instance.CurrentCarIndex : 0;
+        bool isSelected = CarSaveManager.GetSelectedCarIndex() == currentIdx;
 
         if (buyBtn != null)
         {
@@ -81,8 +109,53 @@ public class CarShopPanel : Panel<CarShopPanel>
         {
             selectBtn.gameObject.SetActive(isUnlocked);
             selectBtn.interactable = !isSelected;
+
+            if (selectBtnTxt == null)
+                selectBtnTxt = selectBtn.GetComponentInChildren<TextMeshProUGUI>(true);
+
+            if (selectBtnTxt != null)
+            {
+                selectBtnTxt.text = isSelected ? "Selected" : "Select";
+            }
         }
-        int currentIdx = GarageManager.Instance != null ? GarageManager.Instance.CurrentCarIndex : 0;
+
+        // Stats & Fill calculations
+        string id = data.carID;
+        int engineLvl = CarSaveManager.GetUpgradeLevel(id, UpgradeType.Engine);
+        int handlingLvl = CarSaveManager.GetUpgradeLevel(id, UpgradeType.Handling);
+        int brakeLvl = CarSaveManager.GetUpgradeLevel(id, UpgradeType.Brake);
+        int speedLvl = CarSaveManager.GetUpgradeLevel(id, UpgradeType.Speed);
+
+        UpgradeConfigSO cfg = null;
+        if (GarageManager.Instance != null && GarageManager.Instance.carDatabase != null)
+        {
+            cfg = GarageManager.Instance.carDatabase.upgradeConfig;
+        }
+        if (cfg == null && CarDatabaseSO.Instance != null)
+        {
+            cfg = CarDatabaseSO.Instance.upgradeConfig;
+        }
+
+        float finalSpeed = (cfg != null) ? cfg.CalculateUpgradedStat(data.baseMaxSpeed, UpgradeType.Speed, speedLvl) : data.baseMaxSpeed;
+        float finalTorque = (cfg != null) ? cfg.CalculateUpgradedStat(data.baseTorque, UpgradeType.Engine, engineLvl) : data.baseTorque;
+        float finalBrake = (cfg != null) ? cfg.CalculateUpgradedStat(data.baseBrake, UpgradeType.Brake, brakeLvl) : data.baseBrake;
+        float finalHandling = (cfg != null) ? cfg.CalculateUpgradedStat(data.baseHandling, UpgradeType.Handling, handlingLvl) : data.baseHandling;
+
+        float maxSpeed = (cfg != null) ? cfg.CalculateUpgradedStat(data.baseMaxSpeed, UpgradeType.Speed, UpgradeConfigSO.MAX_LEVEL) : finalSpeed;
+        float maxTorque = (cfg != null) ? cfg.CalculateUpgradedStat(data.baseTorque, UpgradeType.Engine, UpgradeConfigSO.MAX_LEVEL) : finalTorque;
+        float maxBrake = (cfg != null) ? cfg.CalculateUpgradedStat(data.baseBrake, UpgradeType.Brake, UpgradeConfigSO.MAX_LEVEL) : finalBrake;
+        float maxHandling = (cfg != null) ? cfg.CalculateUpgradedStat(data.baseHandling, UpgradeType.Handling, UpgradeConfigSO.MAX_LEVEL) : finalHandling;
+
+        if (carSpeedTxt != null) carSpeedTxt.text = finalSpeed.ToString("F0");
+        if (carTorqueTxt != null) carTorqueTxt.text = finalTorque.ToString("F0");
+        if (carBrakeTxt != null) carBrakeTxt.text = finalBrake.ToString("F0");
+        if (carHandlingTxt != null) carHandlingTxt.text = finalHandling.ToString("F2");
+
+        if (carSpeedFillImg != null) carSpeedFillImg.fillAmount = maxSpeed > 0 ? Mathf.Clamp01(finalSpeed / maxSpeed) : 1f;
+        if (carTorqueFillImg != null) carTorqueFillImg.fillAmount = maxTorque > 0 ? Mathf.Clamp01(finalTorque / maxTorque) : 1f;
+        if (carBrakeFillImg != null) carBrakeFillImg.fillAmount = maxBrake > 0 ? Mathf.Clamp01(finalBrake / maxBrake) : 1f;
+        if (carHandlingFillImg != null) carHandlingFillImg.fillAmount = maxHandling > 0 ? Mathf.Clamp01(finalHandling / maxHandling) : 1f;
+        
         int totalCars = 0;
         if (GarageManager.Instance != null && GarageManager.Instance.carDatabase != null && GarageManager.Instance.carDatabase.cars != null)
         {

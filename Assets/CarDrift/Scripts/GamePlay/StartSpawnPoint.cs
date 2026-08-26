@@ -7,7 +7,7 @@ public class EnemySpawnConfig
 {
     public string name = "Enemy Spawn";
     public CarType carType = CarType.M3_E46;
-    public AIDifficulty aiDifficulty = AIDifficulty.Medium;
+    public AIDifficulty aiDifficulty = AIDifficulty.Hard;
     public Transform spawnTransform;
 }
 
@@ -33,19 +33,34 @@ public class StartSpawnPoint : MonoBehaviour
 
     [Header("Options")]
     public bool spawnOnStart = true;
+    [Tooltip("Thời gian chờ giữa các lần sinh xe lần lượt (giây)")]
+    public float spawnInterval = 2f;
 
     private readonly List<CarController> spawnedCars = new List<CarController>();
+    private bool isSpawning = false;
+    private Task currentSpawnTask = null;
 
     private async void Start()
     {
         if (spawnOnStart)
         {
-            await SpawnAllVehiclesAsync();
+            currentSpawnTask = SpawnAllVehiclesAsync();
+            await currentSpawnTask;
         }
     }
 
-    public async Task SpawnAllVehiclesAsync()
+    public async Task SpawnAllVehiclesAsync(System.Action<float, string> onProgress = null)
     {
+        if (isSpawning)
+        {
+            if (currentSpawnTask != null)
+            {
+                await currentSpawnTask;
+            }
+            return;
+        }
+        isSpawning = true;
+
         ClearSpawnedVehicles();
 
         bool originalRegister = false;
@@ -57,44 +72,135 @@ public class StartSpawnPoint : MonoBehaviour
 
         try
         {
+            onProgress?.Invoke(0.05f, "Preparing grid...");
+
+            // Lấy loại xe Player từ dữ liệu đã chọn trong Garage / Save
+            CarType selectedPlayerCarType = playerCarType;
+            if (CarDatabaseSO.Instance != null)
+            {
+                int selectedIdx = CarSaveManager.GetSelectedCarIndex();
+                CarDataSO selectedCarData = CarDatabaseSO.Instance.GetCarByIndex(selectedIdx);
+                if (selectedCarData != null)
+                {
+                    selectedPlayerCarType = selectedCarData.carType;
+                }
+            }
+
+            int validEnemyCount = 0;
+            for (int i = 0; i < enemySpawnConfigs.Count; i++)
+            {
+                if (enemySpawnConfigs[i].spawnTransform != null)
+                    validEnemyCount++;
+            }
+            int totalCars = (playerSpawnTransform != null ? 1 : 0) + validEnemyCount;
+            int carsSpawnedCount = 0;
+            int delayMs = Mathf.Max(0, Mathf.RoundToInt(spawnInterval * 1000f));
+            float carSlotSize = totalCars > 0 ? 1f / totalCars : 1f;
+
+            // 1. Spawn xe Player trước
             if (playerSpawnTransform != null)
             {
-                CarController playerCar = CreateVehicleGameObject("Player_Car", playerSpawnTransform);
-                ConfigureCar(playerCar, ControllerType.Player, playerCarType, AIDifficulty.Medium, false);
+                int currentCarIdx = carsSpawnedCount;
+                carsSpawnedCount++;
+                float carBaseP = (float)currentCarIdx * carSlotSize;
+
+                onProgress?.Invoke(carBaseP + 0.1f * carSlotSize, $"Preparing Player Car ({selectedPlayerCarType})...");
+
+                CarController playerCar = CreateVehicleGameObject($"Player_Car_{selectedPlayerCarType}", playerSpawnTransform);
+                ConfigureCar(playerCar, ControllerType.Player, selectedPlayerCarType, AIDifficulty.Medium, false);
                 spawnedCars.Add(playerCar);
+
+                onProgress?.Invoke(carBaseP + 0.35f * carSlotSize, $"Loading Player Car ({selectedPlayerCarType})...");
+                await playerCar.LoadCarModelAsync(selectedPlayerCarType);
+
+                onProgress?.Invoke(carBaseP + 0.65f * carSlotSize, $"Configuring Player Car...");
+
+                // Chờ delay giữa các lần spawn xe kèm cập nhật % mượt mà
+                if (validEnemyCount > 0 && delayMs > 0)
+                {
+                    int elapsed = 0;
+                    int step = 100;
+                    while (elapsed < delayMs)
+                    {
+                        int cur = Mathf.Min(step, delayMs - elapsed);
+                        await Task.Delay(cur);
+                        elapsed += cur;
+                        float delayFrac = (float)elapsed / delayMs;
+                        float p = carBaseP + (0.65f + delayFrac * 0.35f) * carSlotSize;
+                        onProgress?.Invoke(p, $"Spawning Player Car ({selectedPlayerCarType})...");
+                    }
+                }
+                else
+                {
+                    onProgress?.Invoke(carBaseP + 1.0f * carSlotSize, $"Player Car Ready");
+                }
             }
             else
             {
                 Debug.LogWarning("[StartSpawnPoint] Chưa gán PlayerSpawnTransform!");
             }
 
+            // 2. Spawn lần lượt từng xe Enemy
+            int enemyIndex = 0;
             for (int i = 0; i < enemySpawnConfigs.Count; i++)
             {
                 var config = enemySpawnConfigs[i];
                 if (config.spawnTransform == null) continue;
 
-                CarController enemyCar = CreateVehicleGameObject($"Enemy_Car_{i + 1}_{config.carType}", config.spawnTransform);
+                enemyIndex++;
+                int currentCarIdx = carsSpawnedCount;
+                carsSpawnedCount++;
+                float carBaseP = (float)currentCarIdx * carSlotSize;
+
+                onProgress?.Invoke(carBaseP + 0.1f * carSlotSize, $"Preparing Opponent {enemyIndex} ({config.carType})...");
+
+                CarController enemyCar = CreateVehicleGameObject($"Enemy_Car_{enemyIndex}_{config.carType}", config.spawnTransform);
                 ConfigureCar(enemyCar, ControllerType.AI, config.carType, config.aiDifficulty, true);
                 spawnedCars.Add(enemyCar);
+
+                onProgress?.Invoke(carBaseP + 0.35f * carSlotSize, $"Loading Opponent {enemyIndex} ({config.carType})...");
+                await enemyCar.LoadCarModelAsync(config.carType);
+
+                onProgress?.Invoke(carBaseP + 0.65f * carSlotSize, $"Configuring Opponent {enemyIndex}...");
+
+                // Chờ delay 2s cho đến chiếc cuối cùng kèm cập nhật % mượt mà
+                if (enemyIndex < validEnemyCount && delayMs > 0)
+                {
+                    int elapsed = 0;
+                    int step = 100;
+                    while (elapsed < delayMs)
+                    {
+                        int cur = Mathf.Min(step, delayMs - elapsed);
+                        await Task.Delay(cur);
+                        elapsed += cur;
+                        float delayFrac = (float)elapsed / delayMs;
+                        float p = carBaseP + (0.65f + delayFrac * 0.35f) * carSlotSize;
+                        onProgress?.Invoke(p, $"Spawning Opponent {enemyIndex} ({config.carType})...");
+                    }
+                }
+                else
+                {
+                    onProgress?.Invoke(carBaseP + 1.0f * carSlotSize, $"Opponent {enemyIndex} Ready");
+                }
             }
-            for (int i = 0; i < spawnedCars.Count; i++)
-            {
-                CarController car = spawnedCars[i];
-                await car.LoadCarModelAsync(car.carType);
-                await Task.Delay(2000);
-            }
+
+            onProgress?.Invoke(0.99f, "Finalizing grid setup...");
         }
         finally
         {
             if (RCCP_SceneManager.Instance != null)
                 RCCP_SceneManager.Instance.registerLastVehicleAsPlayer = originalRegister;
+            isSpawning = false;
         }
+
         var player = spawnedCars.Find(c => c.controllerType == ControllerType.Player);
         if (player != null && player.carController != null && RCCP_SceneManager.Instance != null)
         {
             bool isPlaying = GameManager.Instance != null && GameManager.Instance.GameState == GameState.Playing;
             RCCP_SceneManager.Instance.RegisterPlayer(player.carController, isPlaying);
         }
+
+        onProgress?.Invoke(1.0f, "Loading ...");
     }
 
     private void ConfigureCar(CarController car, ControllerType type, CarType cType, AIDifficulty diff, bool isAI)
@@ -103,6 +209,7 @@ public class StartSpawnPoint : MonoBehaviour
         car.isDamageable = false;
         car.controllerType = type;
         car.carType = cType;
+        car.isMenuModel = false;
 
         if (isAI)
         {
@@ -124,6 +231,17 @@ public class StartSpawnPoint : MonoBehaviour
         {
             carGo = Instantiate(carControllerPrefab, spawnTransform.position, spawnTransform.rotation);
             carGo.name = name;
+
+            // Xóa triệt để các model xe con mặc định đính kèm sẵn trong Prefab trước khi load Addressable mới
+            for (int i = carGo.transform.childCount - 1; i >= 0; i--)
+            {
+                Transform child = carGo.transform.GetChild(i);
+                if (child.GetComponent<RCCP_CarController>() != null || child.GetComponentInChildren<RCCP_CarController>() != null)
+                {
+                    child.gameObject.SetActive(false);
+                    Destroy(child.gameObject);
+                }
+            }
         }
         else
         {
@@ -182,6 +300,8 @@ public class StartSpawnPoint : MonoBehaviour
 
         int sideMultiplier = startRight ? 1 : -1;
 
+        var availableCarTypes = (CarType[])System.Enum.GetValues(typeof(CarType));
+
         for (int i = 0; i < enemyCount; i++)
         {
             int row = i / 2;
@@ -201,7 +321,7 @@ public class StartSpawnPoint : MonoBehaviour
             EnemySpawnConfig config = new EnemySpawnConfig
             {
                 name = $"Enemy {i + 1}",
-                carType = (CarType)(i % System.Enum.GetValues(typeof(CarType)).Length),
+                carType = availableCarTypes.Length > 0 ? availableCarTypes[i % availableCarTypes.Length] : CarType.Sedan,
                 aiDifficulty = AIDifficulty.Medium,
                 spawnTransform = spObj.transform
             };

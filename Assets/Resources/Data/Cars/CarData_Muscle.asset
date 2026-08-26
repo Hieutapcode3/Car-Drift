@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b3c282abf52af74da0020e733b2fdbd, type: 3}
   m_Name: CarData_Muscle
   m_EditorClassIdentifier: 
-  carID: car_7
+  carID: car_6
   carName: Thunderbolt
-  carType: 7
-  rank: 4
-  unlockCostGold: 30000
+  carType: 6
+  rank: 3
+  unlockCostGold: 15200
   isUnlockedByDefault: 0
-  baseMaxSpeed: 325
-  baseTorque: 480
-  baseBrake: 2500
-  baseHandling: 1
+  baseMaxSpeed: 326
+  baseTorque: 575
+  baseBrake: 5500
+  baseHandling: 0.05

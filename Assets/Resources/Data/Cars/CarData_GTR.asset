@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b3c282abf52af74da0020e733b2fdbd, type: 3}
   m_Name: CarData_GTR
   m_EditorClassIdentifier: 
-  carID: car_6
+  carID: car_4
   carName: Nightstrike
-  carType: 6
+  carType: 4
   rank: 2
-  unlockCostGold: 12000
+  unlockCostGold: 8300
   isUnlockedByDefault: 0
   baseMaxSpeed: 302
   baseTorque: 400

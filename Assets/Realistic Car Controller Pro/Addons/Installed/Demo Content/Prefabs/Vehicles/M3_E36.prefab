@@ -11322,9 +11322,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _poweredAxles: []
-  _brakedAxles: []
-  _steeredAxles: []
-  _handbrakedAxles: []
+  _brakedAxles:
+  - {fileID: 730452380170876613}
+  - {fileID: 730452380127696343}
+  _steeredAxles:
+  - {fileID: 730452380127696343}
+  _handbrakedAxles:
+  - {fileID: 730452380170876613}
   checkComponents: 0
   canControl: 1
   externalControl: 0
@@ -13944,7 +13948,7 @@ MonoBehaviour:
   engineStarting: 0
   engineRPM: 0
   minEngineRPM: 700
-  maxEngineRPM: 8000
+  maxEngineRPM: 7000
   engineAccelerationRate: 0.75
   engineCouplingToWheelsRate: 1.5
   engineDecelerationRate: 0.35
@@ -13970,7 +13974,7 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 8000
+      time: 7000
       value: 0.85
       inSlope: 0
       outSlope: 0

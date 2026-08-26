@@ -19,7 +19,7 @@ MonoBehaviour:
     lightFlare: {fileID: 12100000, guid: 87d7de3618425464baf1bc16be120258, type: 2}
   - envType: 1
     skyboxMaterial: {fileID: 2100000, guid: d1fdb8e44b28da34d9e922cca0bc740e, type: 2}
-    lightColor: {r: 0.35686275, g: 0.39607844, b: 0.54901963, a: 1}
+    lightColor: {r: 0.65882355, g: 0.65882355, b: 0.65882355, a: 1}
     lightFlare: {fileID: 12100000, guid: 36b33896aaad75041b9df6089966c7bc, type: 2}
   - envType: 2
     skyboxMaterial: {fileID: 2100000, guid: e0a21ebc98cee4e46bbae873ec0be703, type: 2}

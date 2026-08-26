@@ -157,4 +157,45 @@ public static class CarSaveManager
         PlayerPrefs.Save();
         NotifyCustomizationUpdated();
     }
+
+    public static void ClearAllUpgradeData(IList<CarDataSO> cars)
+    {
+        if (cars == null) return;
+        UpgradeType[] types = (UpgradeType[])Enum.GetValues(typeof(UpgradeType));
+
+        foreach (CarDataSO car in cars)
+        {
+            if (car == null) continue;
+            foreach (UpgradeType type in types)
+            {
+                string key = $"Car_{car.carID}_{type}_Level";
+                PlayerPrefs.DeleteKey(key);
+            }
+        }
+
+        PlayerPrefs.Save();
+        NotifyCustomizationUpdated();
+    }
+
+    public static void ClearAllData(IList<CarDataSO> cars, CustomConfigSO customConfig, bool resetCarUnlocks = false)
+    {
+        ClearAllCustomData(cars, customConfig);
+        ClearAllUpgradeData(cars);
+
+        if (resetCarUnlocks && cars != null)
+        {
+            foreach (CarDataSO car in cars)
+            {
+                if (car == null) continue;
+                string key = $"Car_{car.carID}_Unlocked";
+                PlayerPrefs.DeleteKey(key);
+            }
+            PlayerPrefs.DeleteKey(KEY_SELECTED_CAR_INDEX);
+            PlayerPrefs.Save();
+            CheckAndUnlockDefaultCar();
+        }
+
+        PlayerPrefs.Save();
+        NotifyCustomizationUpdated();
+    }
 }

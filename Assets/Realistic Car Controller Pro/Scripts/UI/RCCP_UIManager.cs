@@ -17,16 +17,19 @@ using TMPro;
 /// RCCP UI Canvas that manages the event systems, panels, gauges, images and texts related to the vehicle and player.
 /// </summary>
 [AddComponentMenu("BoneCracker Games/Realistic Car Controller Pro/UI/RCCP UI Manager")]
-public class RCCP_UIManager : RCCP_UIComponent {
+public class RCCP_UIManager : RCCP_UIComponent
+{
 
     private static RCCP_UIManager instance;
 
     /// <summary>
     /// Instance of the class.
     /// </summary>
-    public static RCCP_UIManager Instance {
+    public static RCCP_UIManager Instance
+    {
 
-        get {
+        get
+        {
 
 #if !UNITY_2022_1_OR_NEWER
             if (instance == null)
@@ -74,7 +77,8 @@ public class RCCP_UIManager : RCCP_UIComponent {
     [Tooltip("Manual Gear Down Selector")] public GameObject gearDown;
 
     [System.Serializable]
-    public class SpeedOMeter {
+    public class SpeedOMeter
+    {
 
         /// <summary>
         /// Needle gameobject.
@@ -84,7 +88,8 @@ public class RCCP_UIManager : RCCP_UIComponent {
         /// <summary>
         /// Turn axis.
         /// </summary>
-        public enum TurnAxis {
+        public enum TurnAxis
+        {
             X, Y, Z
         }
         public TurnAxis turnAxis = TurnAxis.Z;
@@ -113,12 +118,15 @@ public class RCCP_UIManager : RCCP_UIComponent {
         /// Operates the needle with given input.
         /// </summary>
         /// <param name="_input"></param>
-        public void Operate(float _input) {
+        public void Operate(float _input)
+        {
 
             //  Taking default rotation of the needle.
-            if (defRotation == -1f) {
+            if (defRotation == -1f)
+            {
 
-                switch (turnAxis) {
+                switch (turnAxis)
+                {
 
                     case TurnAxis.X:
                         defRotation = needle.transform.localEulerAngles.x;
@@ -143,7 +151,8 @@ public class RCCP_UIManager : RCCP_UIComponent {
             currentRotation = defRotation + (input * multiplierRotation);
 
             //  And turning the needle.
-            switch (turnAxis) {
+            switch (turnAxis)
+            {
 
                 case TurnAxis.X:
                     needle.transform.localEulerAngles = new Vector3(currentRotation, needle.transform.localEulerAngles.y, needle.transform.localEulerAngles.z);
@@ -186,9 +195,11 @@ public class RCCP_UIManager : RCCP_UIComponent {
     [Header("Buttons")]
     [Tooltip("Button of rebinding inputs")] public Button rebindInputsButton;
 
-    private void Awake() {
+    private void Awake()
+    {
 
-        if (spawnVehicles) {
+        if (spawnVehicles)
+        {
 
 #if RCCP_DEMO
             spawnVehicles.SetActive(true);
@@ -202,7 +213,8 @@ public class RCCP_UIManager : RCCP_UIComponent {
 
     }
 
-    private void OnEnable() {
+    private void OnEnable()
+    {
 
         //  Firing an event when RCCP Canvas spawns.
         RCCP_Events.Event_OnRCCPUISpawned(this);
@@ -213,7 +225,8 @@ public class RCCP_UIManager : RCCP_UIComponent {
 
     }
 
-    private void RCCP_InputManager_OnOptions() {
+    private void RCCP_InputManager_OnOptions()
+    {
 
         settings.SetActive(!settings.activeSelf);
 
@@ -222,13 +235,15 @@ public class RCCP_UIManager : RCCP_UIComponent {
 
     }
 
-    private void LateUpdate() {
+    private void LateUpdate()
+    {
 
         //  Finding player vehicle on the scene.
         carController = RCCPSceneManager.activePlayerVehicle;
 
         //  If car controller not found, at disable ui option is enabled, disable panels.
-        if (RCCPSceneManager.disableUIWhenNoPlayerVehicle) {
+        if (RCCPSceneManager.disableUIWhenNoPlayerVehicle)
+        {
 
             if (RCCPSettings.mobileControllerEnabled && mobileControllers && mobileControllers.activeSelf != carController)
                 mobileControllers.SetActive(carController);
@@ -249,7 +264,8 @@ public class RCCP_UIManager : RCCP_UIComponent {
             speedometer.Operate(carController.engineRPM);
 
         //  If vehicle has stability component, control the ESP and ABS images.
-        if (carController.Stability) {
+        if (carController.Stability)
+        {
 
             if (ESP)
                 ESP.color = carController.Stability.ESPEngaged ? Color.white : new Color(0f, 0f, 0f, .2f);
@@ -263,7 +279,8 @@ public class RCCP_UIManager : RCCP_UIComponent {
         }
 
         //  If vehicle has lights component, control the light images.
-        if (carController.Lights) {
+        if (carController.Lights)
+        {
 
             if (headlights)
                 headlights.color = carController.Lights.lowBeamHeadlights ? Color.white : new Color(0f, 0f, 0f, .2f);
@@ -280,12 +297,15 @@ public class RCCP_UIManager : RCCP_UIComponent {
         }
 
         //  If vehicle has nos component, control the nos sliders.
-        if (carController.OtherAddonsManager && carController.OtherAddonsManager.Nos) {
+        if (carController.OtherAddonsManager && carController.OtherAddonsManager.Nos)
+        {
 
             if (NOS)
                 NOS.fillAmount = carController.OtherAddonsManager.Nos.amount;
 
-        } else {
+        }
+        else
+        {
 
             if (NOS)
                 NOS.fillAmount = 0f;
@@ -293,12 +313,15 @@ public class RCCP_UIManager : RCCP_UIComponent {
         }
 
         //  If vehicle has fuel tank component, control the gas sliders.
-        if (carController.OtherAddonsManager && carController.OtherAddonsManager.FuelTank) {
+        if (carController.OtherAddonsManager && carController.OtherAddonsManager.FuelTank)
+        {
 
             if (gas)
                 gas.fillAmount = carController.OtherAddonsManager.FuelTank.fuelTankFillAmount;
 
-        } else {
+        }
+        else
+        {
 
             if (gas)
                 gas.fillAmount = 0f;
@@ -318,16 +341,20 @@ public class RCCP_UIManager : RCCP_UIComponent {
             RPMText.text = carController.engineRPM.ToString("F0");
 
         //  Assigning text of the gear.
-        if (gearText) {
+        if (gearText)
+        {
 
-            if (carController.direction == 1) {
+            if (carController.direction == 1)
+            {
 
                 if (!carController.NGearNow)
                     gearText.text = (carController.currentGear + 1).ToString("F0");
                 else
                     gearText.text = "N";
 
-            } else {
+            }
+            else
+            {
 
                 gearText.text = "R";
 
@@ -336,9 +363,11 @@ public class RCCP_UIManager : RCCP_UIComponent {
         }
 
         //  If vehicle has recorder component, control the recording and playing texts.
-        if (carController.OtherAddonsManager && carController.OtherAddonsManager.Recorder) {
+        if (carController.OtherAddonsManager && carController.OtherAddonsManager.Recorder)
+        {
 
-            switch (carController.OtherAddonsManager.Recorder.mode) {
+            switch (carController.OtherAddonsManager.Recorder.mode)
+            {
 
                 case RCCP_Recorder.RecorderMode.Neutral:
 
@@ -374,7 +403,8 @@ public class RCCP_UIManager : RCCP_UIComponent {
 
         }
 
-        if (carController.Gearbox) {
+        if (carController.Gearbox)
+        {
 
             if (gearUp)
                 gearUp.SetActive(carController.Gearbox.transmissionType == RCCP_Gearbox.TransmissionType.Manual ? true : false);
@@ -385,7 +415,9 @@ public class RCCP_UIManager : RCCP_UIComponent {
             if (dnrp)
                 dnrp.SetActive(carController.Gearbox.transmissionType == RCCP_Gearbox.TransmissionType.Automatic_DNRP ? true : false);
 
-        } else {
+        }
+        else
+        {
 
             if (gearUp)
                 gearUp.SetActive(false);
@@ -400,7 +432,8 @@ public class RCCP_UIManager : RCCP_UIComponent {
 
     }
 
-    private void OnDisable() {
+    private void OnDisable()
+    {
 
         RCCP_Events.Event_OnRCCPUIDestroyed(this);
 
@@ -463,7 +496,8 @@ public class RCCP_UIManager : RCCP_UIComponent {
         UpdateRaceTimerDisplay();
     }
 
-    private void Update() {
+    private void Update()
+    {
 
         if (raceTimerRunning)
         {
@@ -509,6 +543,10 @@ public class RCCP_UIManager : RCCP_UIComponent {
         }
 
         lapText.text = $"{currentLap}/{totalLaps} LAPS";
+    }
+    public void OnClickPause()
+    {
+        HUDSystem.Instance.Show<PausePanel>();
     }
 
 }

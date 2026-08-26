@@ -16,9 +16,9 @@ MonoBehaviour:
   carName: Legacy M5
   carType: 3
   rank: 2
-  unlockCostGold: 8000
+  unlockCostGold: 5800
   isUnlockedByDefault: 0
-  baseMaxSpeed: 278
-  baseTorque: 360
-  baseBrake: 2400
-  baseHandling: 1.1
+  baseMaxSpeed: 283
+  baseTorque: 330
+  baseBrake: 5000
+  baseHandling: 0.05

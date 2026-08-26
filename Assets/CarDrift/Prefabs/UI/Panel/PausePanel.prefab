@@ -294,7 +294,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 4882340303929308339}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 8565580853925437591}
+        m_TargetAssemblyTypeName: PausePanel, Assembly-CSharp
+        m_MethodName: OnClickResume
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &3681556101545720211
 GameObject:
   m_ObjectHideFlags: 0
@@ -492,7 +504,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2980557337521324614}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 8565580853925437591}
+        m_TargetAssemblyTypeName: PausePanel, Assembly-CSharp
+        m_MethodName: OnClickQuit
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &4299726753193533470
 GameObject:
   m_ObjectHideFlags: 0
@@ -613,7 +637,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1212012195809481571}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 8565580853925437591}
+        m_TargetAssemblyTypeName: PausePanel, Assembly-CSharp
+        m_MethodName: OnClickHome
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &5163137624062465789
 GameObject:
   m_ObjectHideFlags: 0
@@ -862,6 +898,9 @@ MonoBehaviour:
   popup: {fileID: 0}
   isAllowScrollCamera: 0
   blockTouched: 1
+  resumeBtn: {fileID: 6873827540732440501}
+  homeBtn: {fileID: 3905136273089409976}
+  quitBtn: {fileID: 2585166841149651644}
 --- !u!1 &5963878698859297464
 GameObject:
   m_ObjectHideFlags: 0
