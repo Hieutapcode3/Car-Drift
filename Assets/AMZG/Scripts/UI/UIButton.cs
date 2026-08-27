@@ -63,9 +63,9 @@ public class UIButton : UIBaseInteractive
             pressedY = avatar.transform.localPosition.y;
             isPositionInitialized = true;
         }
-        tweenColorID = avatar.DOColor(pressedColor, 0.1f).intId;
-        avatar.transform.DOLocalMoveY(pressedY - 5f, 0.1f);
-        avatar.transform.DOScale(startScale * 0.98f, 0.1f);
+        tweenColorID = avatar.DOColor(pressedColor, 0.1f).SetUpdate(true).intId;
+        avatar.transform.DOLocalMoveY(pressedY - 5f, 0.1f).SetUpdate(true);
+        avatar.transform.DOScale(startScale * 0.98f, 0.1f).SetUpdate(true);
         // if (soundOn && SoundController.Instance != null)
         // {
         //     if (sfxPress != null)
@@ -90,8 +90,8 @@ public class UIButton : UIBaseInteractive
         //tweenColorID = LeanTween.color(avatar.rectTransform, StartColor, 0.1f).setIgnoreTimeScale(true).setRecursive(false).id;
         //LeanTween.moveLocalY(avatar.gameObject, pressedY, 0.1f).setIgnoreTimeScale(true);
         //LeanTween.scale(avatar.gameObject, startScale, 0.1f).setIgnoreTimeScale(true);
-        tweenColorID = avatar.DOColor(StartColor, 0.1f).intId;
-        avatar.transform.DOLocalMoveY(pressedY, 0.1f);
-        avatar.transform.DOScale(startScale, 0.1f);
+        tweenColorID = avatar.DOColor(StartColor, 0.1f).SetUpdate(true).intId;
+        avatar.transform.DOLocalMoveY(pressedY, 0.1f).SetUpdate(true);
+        avatar.transform.DOScale(startScale, 0.1f).SetUpdate(true);
     }
 }

@@ -185,7 +185,7 @@ GameObject:
   - component: {fileID: 6081026126455197663}
   - component: {fileID: 8634813513652025610}
   - component: {fileID: 4882340303929308339}
-  - component: {fileID: 6873827540732440501}
+  - component: {fileID: 6337475515231015655}
   m_Layer: 0
   m_Name: Resume
   m_TagString: Untagged
@@ -251,7 +251,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &6873827540732440501
+--- !u!114 &6337475515231015655
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -260,39 +260,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 3280979074131725834}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Script: {fileID: 11500000, guid: 2d6ed414876a34849bc6b6c195ccdc56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Navigation:
-    m_Mode: 3
-    m_WrapAround: 0
-    m_SelectOnUp: {fileID: 0}
-    m_SelectOnDown: {fileID: 0}
-    m_SelectOnLeft: {fileID: 0}
-    m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
-  m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
-    m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
-  m_SpriteState:
-    m_HighlightedSprite: {fileID: 0}
-    m_PressedSprite: {fileID: 0}
-    m_SelectedSprite: {fileID: 0}
-    m_DisabledSprite: {fileID: 0}
-  m_AnimationTriggers:
-    m_NormalTrigger: Normal
-    m_HighlightedTrigger: Highlighted
-    m_PressedTrigger: Pressed
-    m_SelectedTrigger: Selected
-    m_DisabledTrigger: Disabled
-  m_Interactable: 1
-  m_TargetGraphic: {fileID: 4882340303929308339}
-  m_OnClick:
+  draggableRoot: {fileID: 0}
+  IsOneTimeInteractable: 0
+  onPress:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 8565580853925437591}
@@ -307,6 +280,21 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  onFingerDown:
+    m_PersistentCalls:
+      m_Calls: []
+  onFingerUp:
+    m_PersistentCalls:
+      m_Calls: []
+  maxPressThresholdX: 100
+  maxPressThresholdY: 100
+  maxDragThresholdX: 400
+  maxDragThresholdY: 400
+  avatar: {fileID: 0}
+  spritePressed: {fileID: 0}
+  soundOn: 1
+  sfxPress: {fileID: 0}
+  alphaRatio: 0.5
 --- !u!1 &3681556101545720211
 GameObject:
   m_ObjectHideFlags: 0
@@ -395,7 +383,7 @@ GameObject:
   - component: {fileID: 2143989340450859367}
   - component: {fileID: 2389919754418682617}
   - component: {fileID: 2980557337521324614}
-  - component: {fileID: 2585166841149651644}
+  - component: {fileID: 590624914332940913}
   m_Layer: 0
   m_Name: Quit
   m_TagString: Untagged
@@ -461,7 +449,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &2585166841149651644
+--- !u!114 &590624914332940913
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -470,39 +458,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 4112042668539096499}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Script: {fileID: 11500000, guid: 2d6ed414876a34849bc6b6c195ccdc56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Navigation:
-    m_Mode: 3
-    m_WrapAround: 0
-    m_SelectOnUp: {fileID: 0}
-    m_SelectOnDown: {fileID: 0}
-    m_SelectOnLeft: {fileID: 0}
-    m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
-  m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
-    m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
-  m_SpriteState:
-    m_HighlightedSprite: {fileID: 0}
-    m_PressedSprite: {fileID: 0}
-    m_SelectedSprite: {fileID: 0}
-    m_DisabledSprite: {fileID: 0}
-  m_AnimationTriggers:
-    m_NormalTrigger: Normal
-    m_HighlightedTrigger: Highlighted
-    m_PressedTrigger: Pressed
-    m_SelectedTrigger: Selected
-    m_DisabledTrigger: Disabled
-  m_Interactable: 1
-  m_TargetGraphic: {fileID: 2980557337521324614}
-  m_OnClick:
+  draggableRoot: {fileID: 0}
+  IsOneTimeInteractable: 0
+  onPress:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 8565580853925437591}
@@ -517,6 +478,21 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  onFingerDown:
+    m_PersistentCalls:
+      m_Calls: []
+  onFingerUp:
+    m_PersistentCalls:
+      m_Calls: []
+  maxPressThresholdX: 100
+  maxPressThresholdY: 100
+  maxDragThresholdX: 400
+  maxDragThresholdY: 400
+  avatar: {fileID: 0}
+  spritePressed: {fileID: 0}
+  soundOn: 1
+  sfxPress: {fileID: 0}
+  alphaRatio: 0.5
 --- !u!1 &4299726753193533470
 GameObject:
   m_ObjectHideFlags: 0
@@ -528,7 +504,7 @@ GameObject:
   - component: {fileID: 6549791916541611580}
   - component: {fileID: 6694616118554431152}
   - component: {fileID: 1212012195809481571}
-  - component: {fileID: 3905136273089409976}
+  - component: {fileID: 1995797037214097028}
   m_Layer: 0
   m_Name: Home
   m_TagString: Untagged
@@ -594,7 +570,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &3905136273089409976
+--- !u!114 &1995797037214097028
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -603,44 +579,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 4299726753193533470}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Script: {fileID: 11500000, guid: 2d6ed414876a34849bc6b6c195ccdc56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Navigation:
-    m_Mode: 3
-    m_WrapAround: 0
-    m_SelectOnUp: {fileID: 0}
-    m_SelectOnDown: {fileID: 0}
-    m_SelectOnLeft: {fileID: 0}
-    m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
-  m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
-    m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
-  m_SpriteState:
-    m_HighlightedSprite: {fileID: 0}
-    m_PressedSprite: {fileID: 0}
-    m_SelectedSprite: {fileID: 0}
-    m_DisabledSprite: {fileID: 0}
-  m_AnimationTriggers:
-    m_NormalTrigger: Normal
-    m_HighlightedTrigger: Highlighted
-    m_PressedTrigger: Pressed
-    m_SelectedTrigger: Selected
-    m_DisabledTrigger: Disabled
-  m_Interactable: 1
-  m_TargetGraphic: {fileID: 1212012195809481571}
-  m_OnClick:
+  draggableRoot: {fileID: 0}
+  IsOneTimeInteractable: 0
+  onPress:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 8565580853925437591}
         m_TargetAssemblyTypeName: PausePanel, Assembly-CSharp
-        m_MethodName: OnClickHome
+        m_MethodName: OnCllickHome
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -650,6 +599,21 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  onFingerDown:
+    m_PersistentCalls:
+      m_Calls: []
+  onFingerUp:
+    m_PersistentCalls:
+      m_Calls: []
+  maxPressThresholdX: 100
+  maxPressThresholdY: 100
+  maxDragThresholdX: 400
+  maxDragThresholdY: 400
+  avatar: {fileID: 0}
+  spritePressed: {fileID: 0}
+  soundOn: 1
+  sfxPress: {fileID: 0}
+  alphaRatio: 0.5
 --- !u!1 &5163137624062465789
 GameObject:
   m_ObjectHideFlags: 0
@@ -898,9 +862,9 @@ MonoBehaviour:
   popup: {fileID: 0}
   isAllowScrollCamera: 0
   blockTouched: 1
-  resumeBtn: {fileID: 6873827540732440501}
-  homeBtn: {fileID: 3905136273089409976}
-  quitBtn: {fileID: 2585166841149651644}
+  resumeBtn: {fileID: 0}
+  homeBtn: {fileID: 0}
+  quitBtn: {fileID: 0}
 --- !u!1 &5963878698859297464
 GameObject:
   m_ObjectHideFlags: 0
